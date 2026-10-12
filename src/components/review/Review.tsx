@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Lock, Save } from "lucide-react";
 import { CartesianGrid, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts";
 import { computeTeamMetrics, parseActualInput, type ResultRow } from "@/lib/domain/metrics";
+import { useAnimateOnce } from "@/lib/client/useAnimateOnce";
 import { cx, Pill, RoleChip, Stat } from "@/components/ui";
 
 export interface ReviewRow extends ResultRow {
@@ -31,6 +32,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
   const router = useRouter();
   const [inputs, setInputs] = useState<Record<string, string>>(() => Object.fromEntries(initialRows.map((r) => [r.id, r.actualBase === null ? "" : String(r.actualBase)])));
   const [busy, setBusy] = useState(false);
+  const animate = useAnimateOnce(1000);
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [fieldErr, setFieldErr] = useState<Record<string, string>>({});
 
@@ -98,7 +100,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
           </header>
           <div className="scroll-thin overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="bg-panel-2 text-left text-xs text-muted">
+              <thead className="bg-pale-2 text-left text-xs text-muted">
                 <tr>
                   <th className="px-4 py-2">Player</th>
                   <th className="px-2 py-2">Role</th>
@@ -135,7 +137,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
                           placeholder="Enter"
                           onChange={(e) => setInputs((s) => ({ ...s, [r.id]: e.target.value }))}
                           className={cx(
-                            "focus-ring num w-24 rounded-lg border bg-ink-2 px-3 py-1.5 disabled:opacity-60",
+                            "focus-ring num w-24 rounded-lg border bg-clover-2 px-3 py-1.5 disabled:opacity-60",
                             (p && !p.ok) || fieldErr[r.id] ? "border-bad" : "border-line-2",
                           )}
                         />
@@ -158,27 +160,37 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
             <h2 id="sc" className="font-semibold">
               Predicted vs actual base points
             </h2>
-            <div className="mt-2 h-[280px]" role="img" aria-label={`Scatter of ${points.length} entered players; ${pending} pending not plotted`}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="inset mt-2 h-[290px] p-2" role="img" aria-label={`Scatter of ${points.length} entered players; ${pending} pending not plotted`}>
+              <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 380, height: 274 }}>
                 <ScatterChart margin={{ top: 10, right: 12, bottom: 18, left: 0 }}>
-                  <CartesianGrid stroke="#22322d" />
-                  <XAxis type="number" dataKey="x" name="Predicted" domain={[0, max]} tick={{ fill: "#9fb0a8", fontSize: 11 }} label={{ value: "Predicted base", position: "insideBottom", offset: -8, fill: "#9fb0a8", fontSize: 11 }} />
-                  <YAxis type="number" dataKey="y" name="Actual" domain={[Math.min(0, ...points.map((p) => p.y)), max]} tick={{ fill: "#9fb0a8", fontSize: 11 }} width={36} />
-                  <ReferenceLine segment={[{ x: 0, y: 0 }, { x: max, y: max }]} stroke="#f6f7f2" strokeDasharray="4 4" strokeOpacity={0.5} />
+                  <CartesianGrid stroke="var(--pale-black)" />
+                  <XAxis type="number" dataKey="x" name="Predicted" domain={[0, max]} stroke="var(--pale-black)" tick={{ fill: "var(--muted)", fontSize: 11 }} label={{ value: "Predicted base", position: "insideBottom", offset: -8, fill: "var(--faint)", fontSize: 11 }} />
+                  <YAxis type="number" dataKey="y" name="Actual" domain={[Math.min(0, ...points.map((p) => p.y)), max]} stroke="var(--pale-black)" tick={{ fill: "var(--muted)", fontSize: 11 }} width={36} />
+                  <ReferenceLine segment={[{ x: 0, y: 0 }, { x: max, y: max }]} stroke="var(--cream)" strokeDasharray="4 4" strokeOpacity={0.55} />
                   <Tooltip
                     cursor={{ strokeDasharray: "3 3" }}
-                    contentStyle={{ background: "#121c19", border: "1px solid #2c403a", borderRadius: 8, color: "#f6f7f2", fontSize: 12 }}
+                    contentStyle={{ background: "var(--pale-black)", border: "1px solid var(--line-2)", borderRadius: 12, color: "var(--cream)", fontSize: 12 }}
                     formatter={(v) => String(v)}
                     labelFormatter={() => ""}
                   />
                   <ZAxis range={[90, 90]} />
-                  <Scatter data={points} fill="#c8f36a" isAnimationActive={false} />
+                  <Scatter
+                    data={points}
+                    fill="var(--gold)"
+                    isAnimationActive={animate}
+                    animationBegin={0}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    shape={(p: { cx?: number; cy?: number; index?: number }) => (
+                      <circle cx={p.cx} cy={p.cy} r={5.5} fill="var(--gold)" className="dot-in" style={{ animationDelay: `${(p.index ?? 0) * 60}ms`, transformOrigin: `${p.cx}px ${p.cy}px` }} />
+                    )}
+                  />
                 </ScatterChart>
               </ResponsiveContainer>
             </div>
             <ul className="mt-2 space-y-1 text-xs text-muted">
               <li>
-                <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-lime" /> Actual entered ({points.length}) — a real 0 is plotted
+                <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-gold" aria-hidden /> Actual entered ({points.length}) — a real 0 is plotted
               </li>
               <li>Actual pending ({pending}) — unknown, not plotted</li>
               <li>- - Perfect prediction (y = x); points below the line were overpredicted</li>
@@ -186,7 +198,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
           </section>
           <section className="panel space-y-2 p-4 text-sm">
             <h2 className="flex items-center gap-2 font-semibold">
-              <Lock size={15} className="text-lime" /> Forecast frozen before the match
+              <Lock size={15} className="text-gold" /> Forecast frozen before the match
             </h2>
             <p className="text-muted">
               Saved {new Date(team.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} IST · rules {team.ruleVersion} · weights v{team.weightVersion} · forecast {team.forecastVersion} · {team.status === "ready" ? "Ready" : "valid, provisional"}.
@@ -195,7 +207,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
           </section>
           {canEdit ? (
             <div className="sticky bottom-16 space-y-2 lg:static">
-              <button disabled={busy || !dirty} onClick={save} className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-lime px-5 py-3 font-semibold text-ink hover:bg-lime-2 disabled:opacity-40">
+              <button disabled={busy || !dirty} onClick={save} className="focus-ring flex w-full items-center justify-center gap-2 rounded-full bg-gold px-5 py-3 font-semibold text-clover hover:bg-gold-2 disabled:opacity-40">
                 <Save size={18} /> {busy ? "Saving…" : "Save actual points"}
               </button>
               {msg && (

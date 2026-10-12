@@ -1,80 +1,358 @@
 @import "tailwindcss";
 
-/* MatchLab XI tokens: dark ink, emerald pitch, lime accent, warm white text */
-@theme {
-  --color-ink: #0b1110;
-  --color-ink-2: #101816;
-  --color-panel: #121c19;
-  --color-panel-2: #16231f;
-  --color-line: #22322d;
-  --color-line-2: #2c403a;
-  --color-pitch: #123d2b;
-  --color-pitch-2: #17492f;
-  --color-lime: #c8f36a;
-  --color-lime-2: #b3df52;
-  --color-warm: #f6f7f2;
-  --color-muted: #9fb0a8;
-  --color-faint: #6c7d76;
-  --color-over: #f0a35e; /* overprediction (neutral warm) */
-  --color-under: #7cc4f2; /* underprediction (neutral cool) */
-  --color-bad: #f2766b;
-  --color-warn: #f2c94c;
-  --color-ok: #8fdc7a;
-  --color-wk: #7cc4f2;
-  --color-bat: #c8f36a;
-  --color-ar: #c9a7ff;
-  --color-bowl: #f2c94c;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-}
-
+/* ───────────── MatchLab XI palette (flat colour blocks) ───────────── */
 :root {
   color-scheme: dark;
+  --clover: #334310; /* Dark Clover Green — page + primary surfaces */
+  --clover-2: #2a380c; /* deeper clover — sidebar, sheets, insets */
+  --gold: #fde182; /* Glossy Gold — accents, primary buttons, active */
+  --gold-2: #f5d466; /* gold hover */
+  --pale-black: #414340; /* Pale Black — cards, panels */
+  --pale-2: #4b4e49; /* raised pale (table heads, inputs) */
+  --line: #575a54;
+  --line-2: #6a6e66;
+  --cream: #e4f0cc; /* text on dark */
+  --muted: #c2cbae; /* secondary text (AA on all surfaces) */
+  --faint: #b0b99f;
+  --ok: #a8e28f;
+  --warn: #ffc56b;
+  --bad: #ffa799;
+  --over: #ffb37a;
+  --under: #9fd4ff;
+  --wk: #9fd4ff;
+  --bat: #fde182;
+  --ar: #d9c2ff;
+  --bowl: #f7b58c;
+  /* cricket field + kit (decorative) */
+  --field: #3b4e14;
+  --field-2: #42571a;
+  --strip: #cdbd8c;
+  --ivory: #f3ebd3;
+  --ball: #c8312b;
+  --ball-seam: #f6e7d0;
+  --logo-panel: #f3f3ee;
+}
+
+@theme inline {
+  --color-clover: var(--clover);
+  --color-clover-2: var(--clover-2);
+  --color-gold: var(--gold);
+  --color-gold-2: var(--gold-2);
+  --color-pale: var(--pale-black);
+  --color-pale-2: var(--pale-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-cream: var(--cream);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-over: var(--over);
+  --color-under: var(--under);
+  --color-wk: var(--wk);
+  --color-bat: var(--bat);
+  --color-ar: var(--ar);
+  --color-bowl: var(--bowl);
+  --color-field: var(--field);
+  --color-ball: var(--ball);
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bodoni), "Gilda Display", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 html,
 body {
-  background: var(--color-ink);
-  color: var(--color-warm);
+  background: var(--clover);
+  color: var(--cream);
 }
 
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Editorial display serif for headings; Manrope everywhere else */
+h1,
+h2,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-weight: 500;
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
 }
 
 .num {
   font-variant-numeric: tabular-nums;
 }
 
+/* Flat surfaces with generous radius */
 .panel {
-  background: var(--color-panel);
-  border: 1px solid var(--color-line);
-  border-radius: 14px;
+  background: var(--pale-black);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.inset {
+  background: var(--clover-2);
+  border-radius: 16px;
 }
 
-.pitch-bg {
-  background:
-    radial-gradient(ellipse at 50% 50%, rgba(200, 243, 106, 0.06), transparent 60%),
-    repeating-linear-gradient(90deg, #123d2b 0 56px, #154431 56px 112px);
-}
-
-.focus-ring:focus-visible {
-  outline: 2px solid var(--color-lime);
+.focus-ring:focus-visible,
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
 ::selection {
-  background: var(--color-lime);
-  color: var(--color-ink);
+  background: var(--gold);
+  color: var(--clover);
 }
 
-/* thin scrollbars inside panels */
+/* Interactive polish */
+.btn-primary {
+  background: var(--gold);
+  color: var(--clover);
+  transition: background-color 180ms ease, transform 120ms ease, box-shadow 180ms ease;
+}
+.btn-primary:hover {
+  background: var(--gold-2);
+}
+.btn-primary:active {
+  transform: translateY(1px) scale(0.99);
+}
+.btn-ghost {
+  border: 1px solid var(--line-2);
+  transition: border-color 180ms ease, background-color 180ms ease, transform 120ms ease;
+}
+.btn-ghost:hover {
+  border-color: color-mix(in oklab, var(--gold) 70%, transparent);
+  background: color-mix(in oklab, var(--gold) 8%, transparent);
+}
+.btn-ghost:active {
+  transform: translateY(1px);
+}
+.lift {
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--gold) 55%, var(--line));
+  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 0.6);
+}
+.lift:active {
+  transform: translateY(-1px);
+}
+
+/* Subtle field geometry on spacious backgrounds (decorative, flat lines) */
+.field-lines {
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 119px, rgb(228 240 204 / 0.035) 119px 120px),
+    linear-gradient(transparent 0 0);
+}
+
+/* Cricket field used by the XI pitch */
+.cricket-field {
+  background: repeating-linear-gradient(90deg, var(--field) 0 56px, var(--field-2) 56px 112px);
+}
+
+/* Skeletons */
+.skeleton {
+  background: color-mix(in oklab, var(--pale-black) 85%, var(--cream));
+  border-radius: 12px;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Page entry */
+.page-enter {
+  animation: page-enter 320ms ease-out both;
+}
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* Chart dots fade in with a stagger (animation runs once on mount) */
+.dot-in {
+  animation: dot-in 500ms ease-out both;
+}
+@keyframes dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* ───────────── Wicket loader ───────────── */
+.wk-ball {
+  animation: wk-ball 2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+@keyframes wk-ball {
+  0% {
+    transform: translate(-70px, -18px) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  45% {
+    transform: translate(0, 0) rotate(300deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-10px, 6px) rotate(340deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-70px, -18px);
+    opacity: 0;
+  }
+}
+.wk-bail-l {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wk-bail-l 2s ease-out infinite;
+}
+.wk-bail-r {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wk-bail-r 2s ease-out infinite;
+}
+@keyframes wk-bail-l {
+  0%, 44% { transform: none; }
+  58% { transform: translate(-8px, -16px) rotate(-40deg); }
+  80% { transform: translate(-10px, -4px) rotate(-70deg); opacity: 1; }
+  92% { opacity: 0; }
+  100% { transform: none; opacity: 0; }
+}
+@keyframes wk-bail-r {
+  0%, 44% { transform: none; }
+  58% { transform: translate(8px, -18px) rotate(45deg); }
+  80% { transform: translate(12px, -5px) rotate(80deg); opacity: 1; }
+  92% { opacity: 0; }
+  100% { transform: none; opacity: 0; }
+}
+.wk-stump {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: wk-stump 2s ease-out infinite;
+}
+@keyframes wk-stump {
+  0%, 44% { transform: none; }
+  56% { transform: rotate(14deg); }
+  85% { transform: rotate(14deg); }
+  100% { transform: none; }
+}
+.wk-burst {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wk-burst 2s ease-out infinite;
+}
+@keyframes wk-burst {
+  0%, 43% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 0.9; transform: scale(1); }
+  66%, 100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* ───────────── Intro (once per session, ≤1.8 s) ───────────── */
+.intro {
+  animation: intro-out 1.8s ease-in forwards;
+}
+@keyframes intro-out {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+.intro-ball {
+  animation: intro-ball 1.1s cubic-bezier(0.3, 0.1, 0.3, 1) both;
+}
+@keyframes intro-ball {
+  from { transform: translateX(-60vw) rotate(0deg); }
+  to { transform: translateX(60vw) rotate(720deg); }
+}
+.intro-title {
+  animation: intro-title 0.9s 0.25s ease-out both;
+}
+@keyframes intro-title {
+  from { clip-path: inset(0 100% 0 0); opacity: 0.2; }
+  to { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+.intro-sub {
+  animation: page-enter 0.5s 0.8s ease-out both;
+}
+.intro-seen .intro {
+  display: none;
+}
+
+/* Save celebration */
+.celebrate {
+  animation: celebrate 1.6s ease-out forwards;
+}
+@keyframes celebrate {
+  0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+  12%, 80% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+.celebrate-bail-l { animation: wk-bail-l 1.6s ease-out 1 both; transform-box: fill-box; transform-origin: center; }
+.celebrate-bail-r { animation: wk-bail-r 1.6s ease-out 1 both; transform-box: fill-box; transform-origin: center; }
+
+/* Thin scrollbars inside panels */
 .scroll-thin::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 .scroll-thin::-webkit-scrollbar-thumb {
-  background: var(--color-line-2);
+  background: var(--line-2);
   border-radius: 8px;
+}
+
+/* Reduced motion: static final states, no intro */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .intro {
+    display: none !important;
+  }
+  .wk-ball {
+    animation: none !important;
+    transform: translate(-22px, -6px);
+    opacity: 1;
+  }
+  .wk-bail-l,
+  .wk-bail-r,
+  .wk-stump,
+  .wk-burst {
+    animation: none !important;
+  }
+  .wk-burst {
+    opacity: 0;
+  }
+  .lift:hover {
+    transform: none;
+  }
 }

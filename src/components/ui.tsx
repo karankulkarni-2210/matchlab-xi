@@ -6,7 +6,7 @@ export function cx(...c: (string | false | null | undefined)[]) {
 
 type Tone = "lime" | "ok" | "warn" | "bad" | "muted" | "over" | "under" | "info";
 const toneCls: Record<Tone, string> = {
-  lime: "bg-lime/15 text-lime border-lime/30",
+  lime: "bg-gold/15 text-gold border-gold/30",
   ok: "bg-ok/12 text-ok border-ok/30",
   warn: "bg-warn/12 text-warn border-warn/30",
   bad: "bg-bad/12 text-bad border-bad/35",
@@ -18,7 +18,7 @@ const toneCls: Record<Tone, string> = {
 
 export function Pill({ tone = "muted", children, title, className }: { tone?: Tone; children: ReactNode; title?: string; className?: string }) {
   return (
-    <span title={title} className={cx("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-4 whitespace-nowrap", toneCls[tone], className)}>
+    <span title={title} className={cx("inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold leading-4 tracking-wide whitespace-nowrap", toneCls[tone], className)}>
       {children}
     </span>
   );
@@ -41,10 +41,10 @@ export function RoleChip({ role }: { role: string | null }) {
 
 export function Card({ title, right, children, className }: { title?: ReactNode; right?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cx("panel p-4", className)}>
+    <section className={cx("panel p-5", className)}>
       {(title || right) && (
         <header className="mb-3 flex items-center justify-between gap-2">
-          {title && <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>}
+          {title && <h2 className="text-lg">{title}</h2>}
           {right}
         </header>
       )}
@@ -54,11 +54,11 @@ export function Card({ title, right, children, className }: { title?: ReactNode;
 }
 
 export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "lime" | "over" | "under" | "bad" }) {
-  const c = tone === "lime" ? "text-lime" : tone === "over" ? "text-over" : tone === "under" ? "text-under" : tone === "bad" ? "text-bad" : "text-warm";
+  const c = tone === "lime" ? "text-gold" : tone === "over" ? "text-over" : tone === "under" ? "text-under" : tone === "bad" ? "text-bad" : "text-cream";
   return (
-    <div className="panel p-4">
-      <div className="text-xs text-muted">{label}</div>
-      <div className={cx("num mt-1 text-2xl font-semibold tracking-tight", c)}>{value}</div>
+    <div className="panel p-5">
+      <div className="eyebrow text-muted">{label}</div>
+      <div className={cx("num mt-2 text-3xl font-semibold tracking-tight", c)}>{value}</div>
       {sub && <div className="mt-1 text-xs text-faint">{sub}</div>}
     </div>
   );
@@ -71,9 +71,9 @@ export function Initials({ name, tone = "lime", size = 40 }: { name: string; ton
     .slice(0, 2)
     .map((s) => s[0]!.toUpperCase())
     .join("");
-  const bg = tone === "lime" ? "bg-lime text-ink" : tone === "wk" ? "bg-wk text-ink" : "bg-warn text-ink";
+  const bg = tone === "lime" ? "bg-gold text-clover" : tone === "wk" ? "bg-wk text-clover" : "bg-warn text-clover";
   return (
-    <span className={cx("inline-flex shrink-0 items-center justify-center rounded-full font-bold ring-2 ring-ink/60", bg)} style={{ width: size, height: size, fontSize: size * 0.36 }}>
+    <span className={cx("inline-flex shrink-0 items-center justify-center rounded-full font-bold ring-2 ring-clover/60", bg)} style={{ width: size, height: size, fontSize: size * 0.36 }}>
       {ini}
     </span>
   );

@@ -21,7 +21,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto max-w-[1400px] space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime">Match Review</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">Match Review</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Learn from every pick</h1>
           <p className="mt-1 text-muted">Enter the actual Dream11 base points for your frozen XI. Errors are predicted − actual: positive means MatchLab overpredicted.</p>
         </div>
@@ -36,7 +36,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         <div className="panel space-y-2 p-6 text-sm text-muted">
           <p>No saved teams yet.</p>
           <p>
-            Build and save an XI first — try the <Link className="text-lime underline" href="/build/demo-hh-dd">demo match</Link>.
+            Build and save an XI first — try the <Link className="text-gold underline" href="/build/demo-hh-dd">demo match</Link>.
           </p>
         </div>
       )}

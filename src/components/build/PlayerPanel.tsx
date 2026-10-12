@@ -1,5 +1,5 @@
 "use client";
-import { ArrowLeftRight, Ban, Lock, LockOpen, Sparkles } from "lucide-react";
+import { ArrowLeftRight, Ban, ChevronDown, Lock, LockOpen, Sparkles } from "lucide-react";
 import { cx, Pill, RoleChip } from "@/components/ui";
 import type { BuildResult, ExplainResponse, Forecast } from "./types";
 
@@ -64,11 +64,11 @@ export function PlayerPanel({
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-3">
-        <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-ink", player.team === data.bundle.match.teams[0] ? "bg-lime" : "bg-warn")}>
+        <span className={cx("flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-clover", player.team === data.bundle.match.teams[0] ? "bg-gold" : "bg-warn")}>
           {player.name.split(" ").map((s) => s[0]).slice(0, 2).join("")}
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-semibold">{player.name}</h3>
+          <h3 className="font-display text-2xl leading-tight">{player.name}</h3>
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted">
             {player.team} <RoleChip role={player.role} />
             <Pill tone={player.lineup === "confirmed_xi" ? "ok" : player.lineup === "confirmed_out" ? "bad" : "warn"}>{player.lineup.replace("_", " ")}</Pill>
@@ -76,7 +76,7 @@ export function PlayerPanel({
         </div>
         <div className="text-right">
           <div className="num text-sm">{player.credits ?? "?"} Cr</div>
-          <div className="num text-lg font-semibold text-lime">{player.predictedBase} pts</div>
+          <div className="num text-lg font-semibold text-gold">{player.predictedBase} pts</div>
           <div className="text-[11px] text-faint">base projection</div>
         </div>
       </div>
@@ -84,80 +84,108 @@ export function PlayerPanel({
       {inXi && (
         <div className="flex flex-wrap items-center gap-2">
           {isC || isVc ? (
-            <span className="inline-flex items-center gap-2 rounded-lg border border-lime/40 bg-lime/10 px-3 py-1.5 text-sm text-lime">
+            <span className="inline-flex items-center gap-2 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-sm text-gold">
               <b>{isC ? "Captain" : "Vice-captain"}</b> · {mult}× points in this XI
             </span>
           ) : null}
           {!isC && (
-            <button disabled={busy} onClick={onMakeCaptain} className="focus-ring rounded-lg border border-line-2 px-3 py-1.5 text-sm hover:border-lime/60 disabled:opacity-50">
+            <button disabled={busy} onClick={onMakeCaptain} className="btn-ghost focus-ring min-h-11 rounded-full px-4 text-sm disabled:opacity-50">
               Make C
             </button>
           )}
           {!isVc && (
-            <button disabled={busy} onClick={onMakeVc} className="focus-ring rounded-lg border border-line-2 px-3 py-1.5 text-sm hover:border-lime/60 disabled:opacity-50">
+            <button disabled={busy} onClick={onMakeVc} className="btn-ghost focus-ring min-h-11 rounded-full px-4 text-sm disabled:opacity-50">
               Make VC
             </button>
           )}
-          <button disabled={busy} onClick={onToggleLock} className="focus-ring inline-flex items-center gap-1 rounded-lg border border-line-2 px-3 py-1.5 text-sm hover:border-lime/60 disabled:opacity-50">
+          <button disabled={busy} onClick={onToggleLock} className="btn-ghost focus-ring inline-flex min-h-11 items-center gap-1 rounded-full px-4 text-sm disabled:opacity-50">
             {locked ? <LockOpen size={14} /> : <Lock size={14} />} {locked ? "Unlock" : "Lock"}
           </button>
         </div>
       )}
       {!inXi && (
         <div className="space-y-2">
-          <div className="rounded-lg border border-line bg-ink-2 p-3 text-sm">
+          <div className="rounded-lg border border-line bg-clover-2 p-3 text-sm">
             <div className="text-xs font-semibold uppercase tracking-wide text-faint">Why benched</div>
             <p className="mt-1">{benchReasonAi?.reason ?? benchDet?.text ?? "Not selected."}</p>
             {benchReasonAi && benchDet && benchReasonAi.reason !== benchDet.text && <p className="mt-1 text-xs text-faint">Computed: {benchDet.text}</p>}
           </div>
-          <button disabled={busy} onClick={onToggleExclude} className="focus-ring inline-flex items-center gap-1 rounded-lg border border-line-2 px-3 py-1.5 text-sm hover:border-lime/60 disabled:opacity-50">
+          <button disabled={busy} onClick={onToggleExclude} className="btn-ghost focus-ring inline-flex min-h-11 items-center gap-1 rounded-full px-4 text-sm disabled:opacity-50">
             <Ban size={14} /> {excluded ? "Allow optimizer to pick" : "Exclude from optimizer"}
           </button>
         </div>
       )}
 
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-clover-2 p-3">
+          <div className="eyebrow text-[10px] text-faint">Projected base</div>
+          <div className="num mt-1 text-2xl font-semibold">
+            {player.predictedBase} <span className="text-sm font-normal text-faint">± {player.uncertainty}</span>
+          </div>
+          <div className="text-[11px] text-faint">± is typical spread, not a confidence interval{player.roleMultiplier !== 1 ? ` · role multiplier ${player.roleMultiplier}` : ""}</div>
+        </div>
+        <div className="rounded-2xl bg-clover-2 p-3" title="Coverage = Σ factor weight × min(1, player sample / target). Targets: form 5, opportunity 10, venue 3, matchup 3 matches.">
+          <div className="eyebrow text-[10px] text-faint">Evidence coverage</div>
+          <div className={cx("num mt-1 text-2xl font-semibold", player.coverage >= 0.7 ? "text-gold" : player.coverage >= 0.4 ? "text-warn" : "text-bad")}>
+            {Math.round(player.coverage * 100)}%
+          </div>
+          <div className="text-[11px] text-faint">
+            {player.historyMatched ? `History: ${player.historyName} (${player.matchMethod})` : "No history match — role prior used"}
+          </div>
+        </div>
+      </div>
+
       <section aria-labelledby="kr">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <h4 id="kr" className="text-sm font-semibold">
-            Key reasons <span className="font-normal text-faint">(evidence based)</span>
-          </h4>
+          <h4 id="kr" className="eyebrow text-muted">Key reasons</h4>
           {aiLabel}
         </div>
         {reason || playerReason ? (
           <div className="space-y-2 text-sm">
             {reason && (
-              <p className="rounded-lg border border-lime/25 bg-lime/5 p-3">
-                <Sparkles size={14} className="mr-1 inline text-lime" aria-hidden />
+              <p className="rounded-2xl border border-gold/30 bg-gold/5 p-3">
+                <Sparkles size={14} className="mr-1 inline text-gold" aria-hidden />
                 {reason.reason}
               </p>
             )}
-            {playerReason && (!reason || !reason.reason.includes(playerReason.reason)) && <p className="rounded-lg border border-line bg-ink-2 p-3">{playerReason.reason}</p>}
-            <div className="flex flex-wrap gap-1.5">
-              {[...new Set([...(reason ? reason.evidenceIds : []), ...(playerReason?.evidenceIds ?? [])])].map((id) => {
-                const ev = evById.get(id);
-                return (
-                  <span key={id} title={ev ? `${ev.detail} — ${ev.source}` : id} className="rounded-md border border-line-2 px-2 py-0.5 text-[11px] text-muted">
-                    {ev?.kind ?? "evidence"}: {ev?.title.slice(0, 48) ?? id}
-                  </span>
-                );
-              })}
-            </div>
+            {playerReason && (!reason || !reason.reason.includes(playerReason.reason)) && <p className="rounded-2xl bg-clover-2 p-3">{playerReason.reason}</p>}
+            <details className="group rounded-2xl bg-clover-2">
+              <summary className="focus-ring flex min-h-11 cursor-pointer list-none items-center justify-between rounded-2xl px-3 text-xs font-semibold text-muted">
+                Sources cited ({[...new Set([...(reason ? reason.evidenceIds : []), ...(playerReason?.evidenceIds ?? [])])].length})
+                <ChevronDown size={14} className="transition-transform group-open:rotate-180" aria-hidden />
+              </summary>
+              <ul className="space-y-2 px-3 pb-3">
+                {[...new Set([...(reason ? reason.evidenceIds : []), ...(playerReason?.evidenceIds ?? [])])].map((id) => {
+                  const ev = evById.get(id);
+                  return (
+                    <li key={id} className="text-xs">
+                      <span className="font-semibold text-cream">{ev?.title ?? id}</span>
+                      {ev && <span className="block text-faint">{ev.detail} — {ev.source}</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
           </div>
         ) : (
           <p className="text-sm text-faint">{inXi ? "Generate reasons to see the match-specific case." : "—"}</p>
         )}
       </section>
 
-      <section aria-labelledby="fx">
-        <h4 id="fx" className="mb-2 text-sm font-semibold">
-          Forecast inputs <span className="font-normal text-faint">(weights v{data.weights.version})</span>
-        </h4>
-        <ul className="space-y-2">
+      <details className="group rounded-2xl bg-clover-2">
+        <summary className="focus-ring flex min-h-11 cursor-pointer list-none items-center justify-between rounded-2xl px-3 text-xs font-semibold text-muted">
+          Forecast inputs &amp; formula · weights v{data.weights.version} · model {data.forecastVersion}
+          <ChevronDown size={14} className="transition-transform group-open:rotate-180" aria-hidden />
+        </summary>
+        <p className="px-3 text-[11px] text-faint">
+          projected = role multiplier × Σ weight × factor; each factor is shrunk toward the player&apos;s baseline when the sample (n) is small.
+        </p>
+        <ul className="space-y-2 p-3">
           {(Object.keys(player.factors) as (keyof Forecast["factors"])[]).map((k) => {
             const f = player.factors[k];
             const w = data.weights.weights[k];
             return (
-              <li key={k} className="rounded-lg border border-line p-2.5">
+              <li key={k} className="rounded-xl bg-clover/60 p-2.5">
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <span>
                     {FACTOR_LABEL[k]} <span className="text-faint">· weight {Math.round(w * 100)}%</span>
@@ -172,26 +200,7 @@ export function PlayerPanel({
             );
           })}
         </ul>
-      </section>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg border border-line p-3">
-          <div className="text-xs text-muted">Projected base</div>
-          <div className="num mt-1 text-2xl font-semibold">
-            {player.predictedBase} <span className="text-sm font-normal text-faint">± {player.uncertainty}</span>
-          </div>
-          <div className="text-[11px] text-faint">± is typical spread, not a confidence interval{player.roleMultiplier !== 1 ? ` · role multiplier ${player.roleMultiplier}` : ""}</div>
-        </div>
-        <div className="rounded-lg border border-line p-3" title="Coverage = Σ factor weight × min(1, player sample / target). Targets: form 5, opportunity 10, venue 3, matchup 3 matches.">
-          <div className="text-xs text-muted">Evidence coverage</div>
-          <div className={cx("num mt-1 text-2xl font-semibold", player.coverage >= 0.7 ? "text-lime" : player.coverage >= 0.4 ? "text-warn" : "text-bad")}>
-            {Math.round(player.coverage * 100)}%
-          </div>
-          <div className="text-[11px] text-faint">
-            {player.historyMatched ? `History: ${player.historyName} (${player.matchMethod})` : "No history match — role prior used"}
-          </div>
-        </div>
-      </div>
+      </details>
 
       {inXi && (alternatives.length > 0 || sameRoleBench.length > 0) && (
         <section aria-labelledby="ci">
@@ -214,7 +223,7 @@ export function PlayerPanel({
                     disabled={busy}
                     onClick={() => onSwap(f.key)}
                     aria-label={`Swap ${player.name} for ${f.name}`}
-                    className="focus-ring rounded-full border border-line-2 p-2 hover:border-lime/60 disabled:opacity-50"
+                    className="focus-ring rounded-full border border-line-2 p-2 hover:border-gold/60 disabled:opacity-50"
                   >
                     <ArrowLeftRight size={14} />
                   </button>

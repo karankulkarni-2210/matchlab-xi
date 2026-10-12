@@ -21,7 +21,7 @@ export function TeamPicker({ current, mine, demo }: { current: string | null; mi
       <select
         value={current ?? ""}
         onChange={(e) => router.push(`/review?team=${e.target.value}`)}
-        className="focus-ring w-full rounded-xl border border-line-2 bg-panel px-3 py-2.5 sm:min-w-[340px]"
+        className="focus-ring w-full rounded-xl border border-line-2 bg-pale px-3 py-2.5 sm:min-w-[340px]"
       >
         {!current && <option value="">Select a team</option>}
         {mine.length > 0 && <optgroup label="Aryan's teams">{mine.map(opt)}</optgroup>}

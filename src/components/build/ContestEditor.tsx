@@ -79,7 +79,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60" role="dialog" aria-modal="true" aria-labelledby="ce-title">
-      <div className="flex h-full w-full max-w-3xl flex-col border-l border-line bg-ink-2">
+      <div className="flex h-full w-full max-w-3xl flex-col border-l border-line bg-clover-2">
         <header className="flex items-start justify-between gap-3 border-b border-line p-4">
           <div>
             <h2 id="ce-title" className="text-lg font-semibold">
@@ -89,7 +89,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
               Credits, contest roles and lineups come from Aryan&apos;s Dream11 contest. MatchLab never guesses them. {known}/{players.length} credits known.
             </p>
           </div>
-          <button onClick={onClose} className="focus-ring rounded-md p-1 text-muted hover:text-warm" aria-label="Close">
+          <button onClick={onClose} className="focus-ring rounded-md p-1 text-muted hover:text-cream" aria-label="Close">
             <X size={20} />
           </button>
         </header>
@@ -106,7 +106,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
           <section className="grid gap-3 sm:grid-cols-2">
             <label className="text-sm">
               <span className="text-muted">Rule preset</span>
-              <select value={ruleId} onChange={(e) => setRuleId(e.target.value)} className="focus-ring mt-1 w-full rounded-lg border border-line-2 bg-panel px-3 py-2">
+              <select value={ruleId} onChange={(e) => setRuleId(e.target.value)} className="focus-ring mt-1 w-full rounded-lg border border-line-2 bg-pale px-3 py-2">
                 {Object.values(RULE_PRESETS).map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.label}
@@ -117,32 +117,32 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
             </label>
             <div className="space-y-2 text-sm">
               <label className="flex items-start gap-2">
-                <input type="checkbox" className="mt-1 accent-[#c8f36a]" checked={rulesConfirmed} onChange={(e) => setRulesConfirmed(e.target.checked)} />
+                <input type="checkbox" className="mt-1 accent-[var(--gold)]" checked={rulesConfirmed} onChange={(e) => setRulesConfirmed(e.target.checked)} />
                 <span>I checked these limits against my contest&apos;s rules screen</span>
               </label>
               <label className="flex items-start gap-2">
-                <input type="checkbox" className="mt-1 accent-[#c8f36a]" checked={lineups.teamA} onChange={(e) => setLineups({ ...lineups, teamA: e.target.checked })} />
+                <input type="checkbox" className="mt-1 accent-[var(--gold)]" checked={lineups.teamA} onChange={(e) => setLineups({ ...lineups, teamA: e.target.checked })} />
                 <span>{teamA} playing XI announced (statuses below reflect it)</span>
               </label>
               <label className="flex items-start gap-2">
-                <input type="checkbox" className="mt-1 accent-[#c8f36a]" checked={lineups.teamB} onChange={(e) => setLineups({ ...lineups, teamB: e.target.checked })} />
+                <input type="checkbox" className="mt-1 accent-[var(--gold)]" checked={lineups.teamB} onChange={(e) => setLineups({ ...lineups, teamB: e.target.checked })} />
                 <span>{teamB} playing XI announced</span>
               </label>
             </div>
             <label className="text-sm">
               <span className="text-muted">Source</span>
-              <input value={sourceLabel} onChange={(e) => setSourceLabel(e.target.value)} maxLength={120} className="focus-ring mt-1 w-full rounded-lg border border-line-2 bg-panel px-3 py-2" />
+              <input value={sourceLabel} onChange={(e) => setSourceLabel(e.target.value)} maxLength={120} className="focus-ring mt-1 w-full rounded-lg border border-line-2 bg-pale px-3 py-2" />
             </label>
             <label className="text-sm">
               <span className="text-muted">Values read at (your local time)</span>
-              <input type="datetime-local" value={asOf} onChange={(e) => setAsOf(e.target.value)} className="focus-ring mt-1 w-full rounded-lg border border-line-2 bg-panel px-3 py-2" />
+              <input type="datetime-local" value={asOf} onChange={(e) => setAsOf(e.target.value)} className="focus-ring mt-1 w-full rounded-lg border border-line-2 bg-pale px-3 py-2" />
             </label>
           </section>
 
           <section className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold">Import CSV</h3>
-              <button onClick={template} className="focus-ring inline-flex items-center gap-1 text-sm text-lime">
+              <button onClick={template} className="focus-ring inline-flex items-center gap-1 text-sm text-gold">
                 <Download size={14} /> Download template (current pool)
               </button>
             </div>
@@ -151,10 +151,10 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
               onChange={(e) => setCsv(e.target.value)}
               rows={4}
               placeholder={"name,team,role,credits,lineup,history_name\nSanju Samson,India,WK,8.5,xi,"}
-              className="focus-ring w-full rounded-lg border border-line-2 bg-panel p-3 font-mono text-xs"
+              className="focus-ring w-full rounded-lg border border-line-2 bg-pale p-3 font-mono text-xs"
             />
             <div className="flex flex-wrap items-center gap-2">
-              <button disabled={!csv.trim() || busy} onClick={previewCsv} className="focus-ring inline-flex items-center gap-1 rounded-lg border border-line-2 px-3 py-1.5 text-sm hover:border-lime/60 disabled:opacity-50">
+              <button disabled={!csv.trim() || busy} onClick={previewCsv} className="focus-ring inline-flex items-center gap-1 rounded-full border border-line-2 px-3 py-1.5 text-sm hover:border-gold/60 disabled:opacity-50">
                 <Upload size={14} /> Validate & apply
               </button>
               <span className="text-xs text-faint">Columns: name, team, role (WK/BAT/AR/BOWL), credits (.5 steps), lineup (xi/out/probable/squad), history_name (optional Cricsheet name).</span>
@@ -176,7 +176,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
             <h3 className="mb-2 text-sm font-semibold">Player pool</h3>
             <div className="scroll-thin max-h-[50vh] overflow-auto rounded-lg border border-line">
               <table className="w-full min-w-[620px] text-sm">
-                <thead className="sticky top-0 bg-panel-2 text-left text-xs text-muted">
+                <thead className="sticky top-0 bg-pale-2 text-left text-xs text-muted">
                   <tr>
                     <th className="px-3 py-2">Player</th>
                     <th className="px-2 py-2">Role</th>
@@ -196,7 +196,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
                         </div>
                       </td>
                       <td className="px-2">
-                        <select aria-label={`${p.name} role`} value={p.role ?? ""} onChange={(e) => update(p.key, { role: (e.target.value || null) as ContestPlayer["role"] })} className="focus-ring rounded-md border border-line-2 bg-panel px-2 py-1">
+                        <select aria-label={`${p.name} role`} value={p.role ?? ""} onChange={(e) => update(p.key, { role: (e.target.value || null) as ContestPlayer["role"] })} className="focus-ring rounded-md border border-line-2 bg-pale px-2 py-1">
                           <option value="">?</option>
                           {["WK", "BAT", "AR", "BOWL"].map((r) => (
                             <option key={r}>{r}</option>
@@ -214,11 +214,11 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
                             const n = Number(v);
                             update(p.key, { credits: v === "" ? null : Number.isFinite(n) ? n : p.credits });
                           }}
-                          className={cx("focus-ring num w-16 rounded-md border bg-panel px-2 py-1", p.credits === null ? "border-warn/50" : "border-line-2")}
+                          className={cx("focus-ring num w-16 rounded-md border bg-pale px-2 py-1", p.credits === null ? "border-warn/50" : "border-line-2")}
                         />
                       </td>
                       <td className="px-2">
-                        <select aria-label={`${p.name} lineup`} value={p.lineup} onChange={(e) => update(p.key, { lineup: e.target.value as ContestPlayer["lineup"] })} className="focus-ring rounded-md border border-line-2 bg-panel px-2 py-1">
+                        <select aria-label={`${p.name} lineup`} value={p.lineup} onChange={(e) => update(p.key, { lineup: e.target.value as ContestPlayer["lineup"] })} className="focus-ring rounded-md border border-line-2 bg-pale px-2 py-1">
                           <option value="squad">squad</option>
                           <option value="probable">probable</option>
                           <option value="confirmed_xi">in XI</option>
@@ -226,7 +226,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
                         </select>
                       </td>
                       <td className="px-2">
-                        <input aria-label={`${p.name} history name`} value={p.historyName ?? ""} placeholder="auto" onChange={(e) => update(p.key, { historyName: e.target.value || null })} className="focus-ring w-32 rounded-md border border-line-2 bg-panel px-2 py-1" />
+                        <input aria-label={`${p.name} history name`} value={p.historyName ?? ""} placeholder="auto" onChange={(e) => update(p.key, { historyName: e.target.value || null })} className="focus-ring w-32 rounded-md border border-line-2 bg-pale px-2 py-1" />
                       </td>
                     </tr>
                   ))}
@@ -238,10 +238,10 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
         <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line p-4">
           <div className="text-sm">{msg ? <span className={msg.tone === "ok" ? "text-ok" : "text-bad"}>{msg.text}</span> : <Pill tone={known === players.length ? "ok" : "warn"}>{known}/{players.length} credits known</Pill>}</div>
           <div className="flex gap-2">
-            <button onClick={onClose} className="focus-ring rounded-lg border border-line-2 px-4 py-2 text-sm">
+            <button onClick={onClose} className="focus-ring rounded-full border border-line-2 px-4 py-2 text-sm">
               Cancel
             </button>
-            <button disabled={readOnly || busy} onClick={save} className="focus-ring rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-ink disabled:opacity-40">
+            <button disabled={readOnly || busy} onClick={save} className="focus-ring rounded-full bg-gold px-4 py-2 text-sm font-semibold text-clover disabled:opacity-40">
               Save contest data
             </button>
           </div>

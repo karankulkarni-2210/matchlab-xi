@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { CircleAlert, FlaskConical, History, RotateCcw, SlidersHorizontal, Sparkles } from "lucide-react";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { learningOverview } from "@/lib/server/learning";
+import { useAnimateOnce } from "@/lib/client/useAnimateOnce";
 import { cx, Pill, Stat } from "@/components/ui";
 
 type Overview = Awaited<ReturnType<typeof learningOverview>>;
@@ -20,6 +21,10 @@ type Version = {
   created_at: string;
   decided_at: string | null;
 };
+
+const chartDot = (props: { cx?: number; cy?: number; index?: number; key?: React.Key | null }, color: string) => (
+    <circle key={String(props.key ?? props.index)} cx={props.cx} cy={props.cy} r={3.5} fill={color} className="dot-in" style={{ animationDelay: `${(props.index ?? 0) * 70}ms`, transformOrigin: `${props.cx}px ${props.cy}px` }} />
+  );
 
 const FACT = ["form", "opportunity", "venue", "matchup"] as const;
 const FACT_LABEL: Record<string, string> = { form: "Recent form", opportunity: "Opportunity", venue: "Venue", matchup: "Matchup" };
@@ -52,6 +57,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
     }
   };
 
+  const animate = useAnimateOnce(1100);
   const chartData = data.perMatch.map((m, i) => ({ name: `${i + 1}`, label: m.label, Predicted: m.predicted, Actual: m.actual, n: m.n }));
   const bias = data.overall.bias;
 
@@ -73,16 +79,16 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
           </span>
         </div>
         {chartData.length ? (
-          <div className="mt-3 h-[240px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="inset mt-3 h-[260px] p-2">
+            <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: 244 }}>
               <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-                <CartesianGrid stroke="#22322d" strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fill: "#9fb0a8", fontSize: 11 }} label={{ value: "Match (chronological)", position: "insideBottom", offset: -2, fill: "#6c7d76", fontSize: 11 }} height={36} />
-                <YAxis tick={{ fill: "#9fb0a8", fontSize: 11 }} width={36} />
-                <Tooltip contentStyle={{ background: "#121c19", border: "1px solid #2c403a", borderRadius: 8, color: "#f6f7f2", fontSize: 12 }} labelFormatter={(_, p) => (p?.[0]?.payload as { label?: string })?.label ?? ""} />
-                <Legend wrapperStyle={{ fontSize: 12, color: "#9fb0a8" }} />
-                <Line type="monotone" dataKey="Predicted" stroke="#c8f36a" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
-                <Line type="monotone" dataKey="Actual" stroke="#f6f7f2" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+                <CartesianGrid stroke="var(--pale-black)" strokeDasharray="3 3" />
+                <XAxis dataKey="name" stroke="var(--pale-black)" tick={{ fill: "var(--muted)", fontSize: 11 }} label={{ value: "Match (chronological)", position: "insideBottom", offset: -2, fill: "var(--faint)", fontSize: 11 }} height={36} />
+                <YAxis stroke="var(--pale-black)" tick={{ fill: "var(--muted)", fontSize: 11 }} width={36} />
+                <Tooltip contentStyle={{ background: "var(--pale-black)", border: "1px solid var(--line-2)", borderRadius: 12, color: "var(--cream)", fontSize: 12 }} labelFormatter={(_, p) => (p?.[0]?.payload as { label?: string })?.label ?? ""} />
+                <Legend wrapperStyle={{ fontSize: 12, color: "var(--muted)" }} />
+                <Line type="monotone" dataKey="Predicted" stroke="var(--gold)" strokeWidth={2.5} dot={(p) => chartDot(p, "var(--gold)")} activeDot={{ r: 5 }} isAnimationActive={animate} animationBegin={0} animationDuration={1100} animationEasing="ease-out" />
+                <Line type="monotone" dataKey="Actual" stroke="var(--cream)" strokeWidth={2} dot={(p) => chartDot(p, "var(--cream)")} activeDot={{ r: 5 }} isAnimationActive={animate} animationBegin={0} animationDuration={1100} animationEasing="ease-out" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -100,7 +106,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
                 <h2 id="pat" className="font-semibold text-bad">
                   Repeated pattern detected
                 </h2>
-                <p className="text-sm text-warm/90">
+                <p className="text-sm text-cream/90">
                   {top.label} {top.direction === "over" ? "overpredicted" : "underpredicted"} by {Math.abs(top.stats.bias ?? 0)} pts on average{data.synthetic ? " in this synthetic history" : ""}.
                 </p>
               </div>
@@ -148,7 +154,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
         <section className="panel space-y-4 p-4" aria-labelledby="adj">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="flex items-start gap-3">
-              <SlidersHorizontal className="mt-0.5 text-lime" size={22} aria-hidden />
+              <SlidersHorizontal className="mt-0.5 text-gold" size={22} aria-hidden />
               <div>
                 <h2 id="adj" className="font-semibold">
                   Suggested adjustment
@@ -162,9 +168,9 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
           {proposed && active ? (
             <>
               {proposed.ai && (proposed.ai.headline as string) ? (
-                <div className="rounded-lg border border-lime/25 bg-lime/5 p-3 text-sm">
+                <div className="rounded-lg border border-gold/25 bg-gold/5 p-3 text-sm">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <Sparkles size={14} className="text-lime" />
+                    <Sparkles size={14} className="text-gold" />
                     <b>{proposed.ai.headline as string}</b>
                     <Pill tone="lime">Gemini · {String(proposed.ai.status)}</Pill>
                   </div>
@@ -181,7 +187,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
               )}
               <div className="overflow-x-auto rounded-lg border border-line">
                 <table className="w-full min-w-[420px] text-sm">
-                  <thead className="bg-panel-2 text-left text-xs text-muted">
+                  <thead className="bg-pale-2 text-left text-xs text-muted">
                     <tr>
                       <th className="px-3 py-2">Factor</th>
                       <th className="px-3 py-2">Current v{active.version}</th>
@@ -198,12 +204,12 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
                           <td className="px-3 py-2">
                             <div className="flex items-center gap-2">
                               <div className="h-2 w-28 rounded-full bg-line">
-                                <div className="h-2 rounded-full bg-lime" style={{ width: `${c * 100 * 1.4}%` }} />
+                                <div className="h-2 rounded-full bg-gold" style={{ width: `${c * 100 * 1.4}%` }} />
                               </div>
                               <span className="num">{Math.round(c * 100)}%</span>
                             </div>
                           </td>
-                          <td className={cx("num px-3 py-2 text-right font-semibold", p > c ? "text-lime" : p < c ? "text-over" : "text-muted")}>{Math.round(p * 100)}%</td>
+                          <td className={cx("num px-3 py-2 text-right font-semibold", p > c ? "text-gold" : p < c ? "text-over" : "text-muted")}>{Math.round(p * 100)}%</td>
                         </tr>
                       );
                     })}
@@ -215,7 +221,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
                         <tr key={r}>
                           <td className="px-3 py-2">{r} multiplier</td>
                           <td className="num px-3 py-2">{c}×</td>
-                          <td className={cx("num px-3 py-2 text-right font-semibold", p < c ? "text-over" : "text-lime")}>{p}×</td>
+                          <td className={cx("num px-3 py-2 text-right font-semibold", p < c ? "text-over" : "text-gold")}>{p}×</td>
                         </tr>
                       );
                     })}
@@ -229,10 +235,10 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
                 </p>
               )}
               <div className="grid gap-2 sm:grid-cols-2">
-                <button disabled={!canAct || !!busy} onClick={() => call("accept", "/api/learning/decide", { dataset: data.dataset, versionId: proposed.id, decision: "accept" })} className="focus-ring rounded-xl bg-lime px-4 py-3 font-semibold text-ink hover:bg-lime-2 disabled:opacity-40">
+                <button disabled={!canAct || !!busy} onClick={() => call("accept", "/api/learning/decide", { dataset: data.dataset, versionId: proposed.id, decision: "accept" })} className="focus-ring rounded-full bg-gold px-4 py-3 font-semibold text-clover hover:bg-gold-2 disabled:opacity-40">
                   Accept for future matches
                 </button>
-                <button disabled={!canAct || !!busy} onClick={() => call("reject", "/api/learning/decide", { dataset: data.dataset, versionId: proposed.id, decision: "reject" })} className="focus-ring rounded-xl border border-line-2 px-4 py-3 font-semibold hover:border-lime/60 disabled:opacity-40">
+                <button disabled={!canAct || !!busy} onClick={() => call("reject", "/api/learning/decide", { dataset: data.dataset, versionId: proposed.id, decision: "reject" })} className="focus-ring rounded-full border border-line-2 px-4 py-3 font-semibold hover:border-gold/60 disabled:opacity-40">
                   Keep current
                 </button>
               </div>
@@ -246,7 +252,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
                     : "Evidence is sufficient but no consistent pattern clears the thresholds, so no change is proposed."
                   : "Not enough reviewed results to propose any change. Keep entering actual points after matches."}
               </p>
-              <button disabled={!canAct || !!busy || !data.gate.met || !flagged.length} onClick={() => call("propose", "/api/learning/propose", { dataset: data.dataset })} className="focus-ring inline-flex items-center gap-2 rounded-xl bg-lime px-4 py-3 font-semibold text-ink hover:bg-lime-2 disabled:opacity-40">
+              <button disabled={!canAct || !!busy || !data.gate.met || !flagged.length} onClick={() => call("propose", "/api/learning/propose", { dataset: data.dataset })} className="focus-ring inline-flex items-center gap-2 rounded-full bg-gold px-4 py-3 font-semibold text-clover hover:bg-gold-2 disabled:opacity-40">
                 <Sparkles size={16} /> {busy === "propose" ? "Analysing…" : "Analyse & propose (Gemini)"}
               </button>
             </div>
@@ -266,13 +272,13 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
               {versions.map((v) => (
                 <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <span className={cx("h-2.5 w-2.5 rounded-full", v.status === "active" ? "bg-lime" : v.status === "proposed" ? "bg-warn" : "bg-faint")} />
+                    <span className={cx("h-2.5 w-2.5 rounded-full", v.status === "active" ? "bg-gold" : v.status === "proposed" ? "bg-warn" : "bg-faint")} />
                     <b>v{v.version}</b>
                     <span className="text-muted">{v.status}</span>
                     <span className="text-xs text-faint">{new Date(v.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
                   </div>
                   {v.status === "superseded" && (
-                    <button disabled={!canAct || !!busy} onClick={() => call("rollback", "/api/learning/decide", { dataset: data.dataset, versionId: v.id, decision: "rollback" })} className="focus-ring inline-flex items-center gap-1 rounded-md border border-line-2 px-2 py-1 text-xs hover:border-lime/60 disabled:opacity-40">
+                    <button disabled={!canAct || !!busy} onClick={() => call("rollback", "/api/learning/decide", { dataset: data.dataset, versionId: v.id, decision: "rollback" })} className="focus-ring inline-flex items-center gap-1 rounded-md border border-line-2 px-2 py-1 text-xs hover:border-gold/60 disabled:opacity-40">
                       <RotateCcw size={12} /> Roll back to v{v.version}
                     </button>
                   )}
@@ -287,7 +293,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
             )}
           </div>
           {data.dataset === "demo" && (
-            <button disabled={!!busy} onClick={() => call("reset", "/api/demo/reset", {})} className="focus-ring inline-flex items-center gap-2 text-xs text-muted hover:text-warm disabled:opacity-40">
+            <button disabled={!!busy} onClick={() => call("reset", "/api/demo/reset", {})} className="focus-ring inline-flex items-center gap-2 text-xs text-muted hover:text-cream disabled:opacity-40">
               <FlaskConical size={13} /> Reset demo dataset (restores the synthetic seed; never touches real data)
             </button>
           )}

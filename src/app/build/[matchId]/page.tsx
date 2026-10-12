@@ -34,10 +34,10 @@ export default async function BuildPage({ params, searchParams }: { params: Prom
           : `The live data provider could not supply this fixture (${error}). MatchLab never fills gaps with invented data.`}
       </p>
       <div className="flex flex-wrap gap-3">
-        <Link href={`/build/${DEMO_MATCH_ID}`} className="focus-ring inline-flex items-center gap-2 rounded-lg bg-lime px-4 py-2.5 text-sm font-semibold text-ink">
+        <Link href={`/build/${DEMO_MATCH_ID}`} className="focus-ring inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2.5 text-sm font-semibold text-clover">
           <FlaskConical size={16} /> Open the demo match
         </Link>
-        <Link href="/" className="focus-ring rounded-lg border border-line-2 px-4 py-2.5 text-sm">
+        <Link href="/" className="focus-ring rounded-full border border-line-2 px-4 py-2.5 text-sm">
           Back to Match Desk
         </Link>
       </div>

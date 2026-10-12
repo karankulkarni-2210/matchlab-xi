@@ -19,16 +19,16 @@ export default async function LearningPage({ searchParams }: { searchParams: Pro
     <div className="mx-auto max-w-[1400px] space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime">Learning Lab</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">Learning Lab</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">A better process, every match.</h1>
           <p className="mt-1 text-muted">Find repeated errors in stored predictions vs actual points, then approve or reject bounded weight changes.</p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <div role="tablist" aria-label="Dataset" className="inline-flex rounded-xl border border-line-2 p-1 text-sm">
-            <Link role="tab" aria-selected={dataset === "demo"} href="/learning?ds=demo" className={cx("focus-ring rounded-lg px-3 py-1.5", dataset === "demo" ? "bg-lime font-semibold text-ink" : "text-muted")}>
+            <Link role="tab" aria-selected={dataset === "demo"} href="/learning?ds=demo" className={cx("focus-ring rounded-lg px-3 py-1.5", dataset === "demo" ? "bg-gold font-semibold text-clover" : "text-muted")}>
               Demo (synthetic)
             </Link>
-            <Link role="tab" aria-selected={dataset === "real"} href="/learning?ds=real" className={cx("focus-ring rounded-lg px-3 py-1.5", dataset === "real" ? "bg-lime font-semibold text-ink" : "text-muted")}>
+            <Link role="tab" aria-selected={dataset === "real"} href="/learning?ds=real" className={cx("focus-ring rounded-lg px-3 py-1.5", dataset === "real" ? "bg-gold font-semibold text-clover" : "text-muted")}>
               Aryan&apos;s matches
             </Link>
           </div>
