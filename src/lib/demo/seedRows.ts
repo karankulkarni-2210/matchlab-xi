@@ -34,7 +34,7 @@ export function demoSeedRows(uuid: () => string) {
       match_snapshot: { label: DEMO_LABEL, venue: "Harbour Oval (fictional)", synthetic: true },
       rule_id: rules.id,
       rule_version: rules.version,
-      rules,
+      rules: { id: rules.id, version: rules.version, label: rules.label },
       weight_version_id: versionId,
       weight_version: 1,
       weights_snapshot: { weights: seed.version.weights, roleMultipliers: seed.version.role_multipliers },

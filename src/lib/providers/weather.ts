@@ -37,14 +37,15 @@ export async function getMatchWeather(city: string, startsAtIso: string): Promis
   if (daysAhead > 15) return { unavailable: "Forecast opens 16 days before the match." };
   if (daysAhead < -1) return { unavailable: "Match is in the past; no forecast shown." };
   try {
-    return await cachedFetch(`om:${city}:${startsAtIso.slice(0, 13)}`, "Open-Meteo", 3600, async () => {
-      const geo = Geo.parse(await fetchJson(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`));
+    return await cachedFetch(`om:${city}:${startsAtIso.slice(0, 13)}`, "Open-Meteo", 3600, async ({ setAsOf }) => {
+      const geo = Geo.parse(await fetchJson(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`, { revalidate: 86400 }));
       const g = geo.results?.[0];
       if (!g) throw new ProviderError(`City not found: ${city}`, "invalid");
       const date = startsAtIso.slice(0, 10);
       const f = Forecast.parse(
         await fetchJson(
           `https://api.open-meteo.com/v1/forecast?latitude=${g.latitude}&longitude=${g.longitude}&hourly=temperature_2m,precipitation_probability,relative_humidity_2m,wind_speed_10m&timezone=GMT&start_date=${date}&end_date=${date}`,
+          { revalidate: 3600, onDate: setAsOf },
         ),
       );
       const hour = startsAtIso.slice(0, 13) + ":00";

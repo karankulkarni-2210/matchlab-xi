@@ -154,7 +154,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
   const statusPill =
     v?.status === "ready" ? (
       <span className="inline-flex items-center gap-2 text-ok">
-        <CheckCircle2 size={22} /> <b>Ready to submit</b>
+        <CheckCircle2 size={20} /> <b>Ready to submit</b>
       </span>
     ) : v?.status === "valid_provisional" ? (
       <span className="inline-flex items-center gap-2 text-warn">
@@ -240,9 +240,9 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_400px]">
+      <div className="grid items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)] lg:grid-rows-[auto_1fr] xl:grid-cols-[300px_minmax(0,1fr)_400px]">
         {/* left: match context */}
-        <aside className="space-y-4" aria-label="Match context">
+        <aside className="space-y-4 lg:col-start-1 lg:row-start-1" aria-label="Match context">
           <section className="panel space-y-4 p-4">
             <h2 className="font-semibold">Match context</h2>
             <div className="flex items-start gap-2 text-sm">
@@ -262,59 +262,10 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
             {m.toss && <div className="text-sm">Toss: {m.toss}</div>}
           </section>
 
-          <section className="panel space-y-3 p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Contest data</h2>
-              <Pill tone={data.contest.origin === "owner" ? "ok" : data.contest.origin === "demo" ? "info" : "warn"}>{data.contest.origin}</Pill>
-            </div>
-            <ul className="space-y-1.5 text-sm">
-              <li className="flex justify-between gap-2">
-                <span className="text-muted">Credits known</span>
-                <span className={cx("num", creditsKnown < data.contest.contest.players.length && "text-warn")}>
-                  {creditsKnown}/{data.contest.contest.players.length}
-                </span>
-              </li>
-              <li className="flex justify-between gap-2">
-                <span className="text-muted">Lineups confirmed</span>
-                <span>
-                  {m.teamShort[0]} {data.contest.contest.lineupsConfirmed.teamA ? "✓" : "—"} · {m.teamShort[1]} {data.contest.contest.lineupsConfirmed.teamB ? "✓" : "—"}
-                </span>
-              </li>
-              <li className="flex justify-between gap-2">
-                <span className="text-muted">Values as of</span>
-                <span className="text-right text-xs">{data.contest.contest.sourceAsOf ? ago(data.contest.contest.sourceAsOf) : "—"}</span>
-              </li>
-            </ul>
-            <p className="text-xs text-faint">{data.contest.contest.sourceLabel}</p>
-            <button onClick={() => setEditor(true)} className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line-2 px-3 py-2 text-sm hover:border-lime/60">
-              <FileSpreadsheet size={15} /> {data.bundle.isDemo ? "View contest data" : "Edit contest data / CSV"}
-            </button>
-          </section>
-
-          <section className="panel space-y-3 p-4">
-            <h2 className="flex items-center gap-2 font-semibold">
-              <Database size={16} aria-hidden /> Evidence sources
-            </h2>
-            <ul className="space-y-2.5 text-sm">
-              {data.bundle.sources.map((s) => (
-                <li key={s.id}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium">{s.label}</span>
-                    <FreshnessPill status={s.status} asOf={s.asOf} />
-                  </div>
-                  <div className="text-xs text-faint">{s.detail}</div>
-                </li>
-              ))}
-            </ul>
-            {data.bundle.squadNote && <p className="rounded-md border border-warn/25 bg-warn/5 p-2 text-xs text-warn">{data.bundle.squadNote}</p>}
-            <p className="text-xs text-faint">
-              History matched for {data.coverageSummary.matched}/{data.coverageSummary.total} players · mean coverage {Math.round(data.coverageSummary.mean * 100)}%.
-            </p>
-          </section>
         </aside>
 
         {/* centre: pitch + pool */}
-        <section className="min-w-0 space-y-4" aria-label="Team">
+        <section className="min-w-0 space-y-4 lg:col-start-2 lg:row-span-2 lg:row-start-1" aria-label="Team">
           {data.team ? (
             <Pitch players={xi} teamA={m.teams[0]} captainKey={data.team.captainKey} viceCaptainKey={data.team.viceCaptainKey} selectedKey={selectedKey} onSelect={onSelect} locked={locked} />
           ) : (
@@ -404,8 +355,61 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
           </section>
         </section>
 
+        {/* contest + sources: below the pitch on phones, left column on desktop */}
+        <aside className="space-y-4 lg:col-start-1 lg:row-start-2" aria-label="Contest data and sources">
+          <section className="panel space-y-3 p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">Contest data</h2>
+              <Pill tone={data.contest.origin === "owner" ? "ok" : data.contest.origin === "demo" ? "info" : "warn"}>{data.contest.origin}</Pill>
+            </div>
+            <ul className="space-y-1.5 text-sm">
+              <li className="flex justify-between gap-2">
+                <span className="text-muted">Credits known</span>
+                <span className={cx("num", creditsKnown < data.contest.contest.players.length && "text-warn")}>
+                  {creditsKnown}/{data.contest.contest.players.length}
+                </span>
+              </li>
+              <li className="flex justify-between gap-2">
+                <span className="text-muted">Lineups confirmed</span>
+                <span>
+                  {m.teamShort[0]} {data.contest.contest.lineupsConfirmed.teamA ? "✓" : "—"} · {m.teamShort[1]} {data.contest.contest.lineupsConfirmed.teamB ? "✓" : "—"}
+                </span>
+              </li>
+              <li className="flex justify-between gap-2">
+                <span className="text-muted">Values as of</span>
+                <span className="text-right text-xs">{data.contest.contest.sourceAsOf ? ago(data.contest.contest.sourceAsOf) : "—"}</span>
+              </li>
+            </ul>
+            <p className="text-xs text-faint">{data.contest.contest.sourceLabel}</p>
+            <button onClick={() => setEditor(true)} className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line-2 px-3 py-2 text-sm hover:border-lime/60">
+              <FileSpreadsheet size={15} /> {data.bundle.isDemo ? "View contest data" : "Edit contest data / CSV"}
+            </button>
+          </section>
+
+          <section className="panel space-y-3 p-4">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Database size={16} aria-hidden /> Evidence sources
+            </h2>
+            <ul className="space-y-2.5 text-sm">
+              {data.bundle.sources.map((s) => (
+                <li key={s.id}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{s.label}</span>
+                    <FreshnessPill status={s.status} asOf={s.asOf} />
+                  </div>
+                  <div className="text-xs text-faint">{s.detail}</div>
+                </li>
+              ))}
+            </ul>
+            {data.bundle.squadNote && <p className="rounded-md border border-warn/25 bg-warn/5 p-2 text-xs text-warn">{data.bundle.squadNote}</p>}
+            <p className="text-xs text-faint">
+              History matched for {data.coverageSummary.matched}/{data.coverageSummary.total} players · mean coverage {Math.round(data.coverageSummary.mean * 100)}%.
+            </p>
+          </section>
+        </aside>
+
         {/* right: why this pick (desktop xl) */}
-        <aside className="panel hidden p-4 xl:block" aria-label="Why this pick">
+        <aside className="panel hidden p-4 xl:col-start-3 xl:row-span-2 xl:row-start-1 xl:block" aria-label="Why this pick">
           <h2 className="mb-3 text-lg font-semibold">Why this pick?</h2>
           {explain?.output?.summary || explain?.template?.summary ? (
             <p className="mb-4 rounded-lg border border-line bg-ink-2 p-3 text-sm text-muted">{explain.output?.summary ?? explain.template?.summary}</p>
@@ -431,7 +435,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
 
       {/* sticky validity / action bar */}
       <div className="sticky bottom-16 z-30 lg:bottom-3">
-        <div className="panel flex flex-col gap-3 border-line-2 bg-panel/95 p-3 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-4">
+        <div className="panel flex flex-col gap-2 border-line-2 bg-panel/95 p-2.5 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
               {statusPill}
@@ -441,7 +445,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
                 </span>
               )}
             </div>
-            <p className="mt-1 line-clamp-2 text-xs text-muted">
+            <p className="mt-1 line-clamp-1 text-xs text-muted sm:line-clamp-2">
               {problems.length ? problems.join(" · ") : blockers.length ? `Not ready: ${blockers.join(" · ")}` : "All rules pass, lineups and rules confirmed."}
             </p>
             {notice && (
@@ -461,22 +465,24 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
               onClick={copyXi}
               aria-label="Copy team as text"
               title="Copy team as text"
-              className="focus-ring inline-flex items-center justify-center rounded-lg border border-line-2 px-3 py-2.5 text-sm hover:border-lime/60 disabled:opacity-40"
+              className="focus-ring inline-flex items-center justify-center rounded-lg border border-line-2 px-3 py-2 text-sm hover:border-lime/60 disabled:opacity-40 sm:py-2.5"
             >
               <ClipboardCopy size={16} />
             </button>
             <button
               disabled={!v?.valid || !!busy}
               onClick={() => generate(explain?.status === "fresh" || explain?.status === "cached")}
-              className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-line-2 px-4 py-2.5 text-sm font-medium hover:border-lime/60 disabled:opacity-40 sm:flex-none"
+              className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-line-2 px-3 py-2 text-sm font-medium hover:border-lime/60 disabled:opacity-40 sm:flex-none sm:px-4 sm:py-2.5"
             >
-              <Sparkles size={16} className={busy === "explain" ? "animate-pulse text-lime" : "text-lime"} /> {explain?.status === "fresh" || explain?.status === "cached" ? "Regenerate with Gemini" : "Generate reasons (Gemini)"}
+              <Sparkles size={16} className={busy === "explain" ? "animate-pulse text-lime" : "text-lime"} />
+              <span className="sm:hidden">{explain?.status === "fresh" || explain?.status === "cached" ? "Regenerate" : "AI reasons"}</span>
+              <span className="hidden sm:inline">{explain?.status === "fresh" || explain?.status === "cached" ? "Regenerate with Gemini" : "Generate reasons (Gemini)"}</span>
             </button>
             <button
               disabled={!v?.valid || !!busy}
               onClick={save}
               title={!signedIn && !data.bundle.isDemo ? "Sign in to save" : undefined}
-              className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-lime px-5 py-2.5 text-sm font-semibold text-ink hover:bg-lime-2 disabled:opacity-40 sm:flex-none"
+              className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-ink hover:bg-lime-2 disabled:opacity-40 sm:flex-none sm:px-5 sm:py-2.5"
             >
               <Save size={16} /> {busy === "save" ? "Saving…" : "Save XI"}
             </button>

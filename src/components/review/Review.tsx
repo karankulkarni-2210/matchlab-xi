@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Save } from "lucide-react";
-import { CartesianGrid, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from "recharts";
 import { computeTeamMetrics, parseActualInput, type ResultRow } from "@/lib/domain/metrics";
 import { cx, Pill, RoleChip, Stat } from "@/components/ui";
 
@@ -171,7 +171,8 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
                     formatter={(v) => String(v)}
                     labelFormatter={() => ""}
                   />
-                  <Scatter data={points} fill="#c8f36a" />
+                  <ZAxis range={[90, 90]} />
+                  <Scatter data={points} fill="#c8f36a" isAnimationActive={false} />
                 </ScatterChart>
               </ResponsiveContainer>
             </div>
@@ -193,7 +194,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
             <p className="text-xs text-faint">Enter Dream11 base points (before C/VC). MatchLab applies the 2× / 1.5× multipliers exactly once. Predictions cannot be edited.</p>
           </section>
           {canEdit ? (
-            <div className="sticky bottom-16 space-y-2 lg:bottom-3">
+            <div className="sticky bottom-16 space-y-2 lg:static">
               <button disabled={busy || !dirty} onClick={save} className="focus-ring flex w-full items-center justify-center gap-2 rounded-xl bg-lime px-5 py-3 font-semibold text-ink hover:bg-lime-2 disabled:opacity-40">
                 <Save size={18} /> {busy ? "Saving…" : "Save actual points"}
               </button>

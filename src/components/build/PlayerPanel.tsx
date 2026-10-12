@@ -131,7 +131,7 @@ export function PlayerPanel({
                 {reason.reason}
               </p>
             )}
-            {playerReason && (!reason || playerReason.reason !== reason.reason) && <p className="rounded-lg border border-line bg-ink-2 p-3">{playerReason.reason}</p>}
+            {playerReason && (!reason || !reason.reason.includes(playerReason.reason)) && <p className="rounded-lg border border-line bg-ink-2 p-3">{playerReason.reason}</p>}
             <div className="flex flex-wrap gap-1.5">
               {[...new Set([...(reason ? reason.evidenceIds : []), ...(playerReason?.evidenceIds ?? [])])].map((id) => {
                 const ev = evById.get(id);

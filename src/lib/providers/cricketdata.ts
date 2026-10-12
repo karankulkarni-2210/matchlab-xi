@@ -83,12 +83,14 @@ export interface MatchSummary {
 let lastQuota: { hitsToday: number; hitsLimit: number; at: string } | null = null;
 export const quotaSnapshot = () => lastQuota;
 
-async function call(pathAndQuery: string) {
+async function call(pathAndQuery: string, revalidate: number, setAsOf?: (d: string | null) => void) {
   if (!env.cricketDataApiKey) throw new ProviderError("CRICKETDATA_API_KEY not configured", "config");
   if (lastQuota && lastQuota.hitsToday >= lastQuota.hitsLimit - 5)
     throw new ProviderError(`Daily quota nearly exhausted (${lastQuota.hitsToday}/${lastQuota.hitsLimit}); serving cache`, "quota");
   const sep = pathAndQuery.includes("?") ? "&" : "?";
-  const raw = await fetchJson(`${BASE}/${pathAndQuery}${sep}apikey=${encodeURIComponent(env.cricketDataApiKey)}`);
+  // _d (UTC day) bounds how long any cached provider response — including a quota failure — can live: quota resets daily.
+  const day = new Date().toISOString().slice(0, 10);
+  const raw = await fetchJson(`${BASE}/${pathAndQuery}${sep}_d=${day}&apikey=${encodeURIComponent(env.cricketDataApiKey)}`, { revalidate, onDate: setAsOf });
   const parsed = Envelope.safeParse(raw);
   if (!parsed.success) throw new ProviderError("Malformed CricketData response", "invalid");
   const { status, reason, info, data } = parsed.data;
@@ -136,8 +138,8 @@ export function normaliseMatch(m: MatchRawT): MatchSummary {
 }
 
 export async function getSeriesMatches(seriesId: string): Promise<Sourced<MatchSummary[]>> {
-  return cachedFetch(`cd:series:${seriesId}`, "CricketData series_info", 3 * 3600, async () => {
-    const data = (await call(`series_info?id=${encodeURIComponent(seriesId)}`)) as { matchList?: unknown };
+  return cachedFetch(`cd:series:${seriesId}`, "CricketData series_info", 3 * 3600, async ({ setAsOf }) => {
+    const data = (await call(`series_info?id=${encodeURIComponent(seriesId)}`, 3 * 3600, setAsOf)) as { matchList?: unknown };
     const list = z.array(MatchRaw).safeParse(data?.matchList);
     if (!list.success) throw new ProviderError("Malformed series match list", "invalid");
     return list.data.map(normaliseMatch);
@@ -149,8 +151,8 @@ export async function getMatchInfo(id: string, forceRefresh = false): Promise<So
     `cd:match:${id}`,
     "CricketData match_info",
     20 * 60,
-    async () => {
-      const m = MatchRaw.safeParse(await call(`match_info?id=${encodeURIComponent(id)}`));
+    async ({ setAsOf }) => {
+      const m = MatchRaw.safeParse(await call(`match_info?id=${encodeURIComponent(id)}`, forceRefresh ? 0 : 20 * 60, setAsOf));
       if (!m.success) throw new ProviderError("Malformed match_info response", "invalid");
       return normaliseMatch(m.data);
     },
@@ -160,8 +162,8 @@ export async function getMatchInfo(id: string, forceRefresh = false): Promise<So
 
 /** Tour squad (costs 10 hits on the free plan) — cached for 12 hours. */
 export async function getMatchSquad(id: string): Promise<Sourced<SquadTeam[]>> {
-  return cachedFetch(`cd:squad:${id}`, "CricketData match_squad", 12 * 3600, async () => {
-    const s = SquadRaw.safeParse(await call(`match_squad?id=${encodeURIComponent(id)}`));
+  return cachedFetch(`cd:squad:${id}`, "CricketData match_squad", 12 * 3600, async ({ setAsOf }) => {
+    const s = SquadRaw.safeParse(await call(`match_squad?id=${encodeURIComponent(id)}`, 12 * 3600, setAsOf));
     if (!s.success) throw new ProviderError("Malformed match_squad response", "invalid");
     return s.data;
   });

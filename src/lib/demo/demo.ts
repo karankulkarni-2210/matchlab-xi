@@ -240,7 +240,7 @@ export function buildDemoSeed(): DemoSeed {
         coverage: f.coverage,
         uncertainty: f.uncertainty,
         factors: Object.fromEntries(
-          (Object.keys(f.factors) as Factor[]).map((k) => [k, { estimate: round(f.factors[k].estimate * scale, 2), n: f.factors[k].n, note: `${f.factors[k].note} (synthetic)` }]),
+          (Object.keys(f.factors) as Factor[]).map((k) => [k, { estimate: round(f.factors[k].estimate * scale, 2), n: f.factors[k].n, note: "synthetic" }]),
         ) as Record<Factor, { estimate: number; n: number; note: string }>,
         multiplier: 1,
         actual: m === 9 && rand() < 0.45 ? null : actual,

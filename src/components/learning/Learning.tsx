@@ -81,8 +81,8 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
                 <YAxis tick={{ fill: "#9fb0a8", fontSize: 11 }} width={36} />
                 <Tooltip contentStyle={{ background: "#121c19", border: "1px solid #2c403a", borderRadius: 8, color: "#f6f7f2", fontSize: 12 }} labelFormatter={(_, p) => (p?.[0]?.payload as { label?: string })?.label ?? ""} />
                 <Legend wrapperStyle={{ fontSize: 12, color: "#9fb0a8" }} />
-                <Line type="monotone" dataKey="Predicted" stroke="#c8f36a" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="Actual" stroke="#f6f7f2" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Predicted" stroke="#c8f36a" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
+                <Line type="monotone" dataKey="Actual" stroke="#f6f7f2" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
