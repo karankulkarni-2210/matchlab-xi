@@ -123,3 +123,20 @@ Supabase security advisor: only the informational note that `ai_cache` has RLS e
 - **Open-Meteo**: forecast for Hyderabad at the scheduled start hour returned (30.3 °C, 0% rain at the time of testing).
 - **Deployment** `https://matchlab-xi-two.vercel.app`, fetched signed out: `/`, `/build/demo-hh-dd`, `/review`, `/learning`, `/api/health` all returned HTTP 200. `/api/health` reports configuration by name/boolean only.
 - **Persistence**: the synthetic demo dataset (9 frozen teams, 99 predictions, 93 actuals, weight v1) is stored in Supabase and rendered by Match Review / Learning Lab after reloads. The Learning Lab detects the seeded pattern ("All-rounders overpredicted by 9.44 pts; same direction in 8 of 8 matches").
+
+## 5. Live end-to-end on production (secret key configured, 12 Oct 2026)
+
+Run against https://matchlab-xi-two.vercel.app with no sign-in. Test rows were removed afterwards and the demo was reset through `/api/demo/reset`.
+
+| Step | Result |
+| --- | --- |
+| Save demo XI (`POST /api/teams`) | 201, frozen, status `ready`, projected 621.5 |
+| Actuals with an invalid value (`abc`) | 422, nothing saved |
+| Actuals: one `0`, one blank, nine values | 200: 10/11 entered, MAE/bias over entered players only, final total withheld (partial 306) |
+| Actuals on a seeded demo team | 200 |
+| Learning proposal (demo) | 201, Gemini `fresh`, replay MAE 8.68 → 7.61 (in-sample, labelled not validated) |
+| Accept proposal | v2 active (AR multiplier 0.864); new builds use v2; frozen team keeps weight v1 / 621.5 |
+| Roll back to v1 | 200, v1 active; decisions recorded `accept`, `rollback` |
+| Save practice XI to Aryan's workspace | 201, status `valid_provisional` (never Ready with illustrative credits) |
+| Direct write with the public key (PostgREST PATCH/INSERT) | 401 `permission denied` |
+| Demo reset | 9 teams / 93 actuals restored |
