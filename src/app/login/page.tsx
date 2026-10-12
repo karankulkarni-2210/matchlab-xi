@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,11 +21,15 @@ export default function LoginPage() {
       if (mode === "signin") {
         const { error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        window.location.href = "/";
+        router.replace("/");
+        router.refresh();
       } else {
         const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: `${window.location.origin}/` } });
         if (error) throw error;
-        if (data.session) window.location.href = "/";
+        if (data.session) {
+          router.replace("/");
+          router.refresh();
+        }
         else setMsg({ tone: "ok", text: "Account created. Check your inbox to confirm your email, then sign in." });
       }
     } catch (err) {

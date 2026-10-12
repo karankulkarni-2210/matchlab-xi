@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarClock, FlaskConical, MapPin, TriangleAlert } from "lucide-react";
 import { ago, Card, fmtTime, FreshnessPill, Initials, Pill } from "@/components/ui";
 import { DEMO_MATCH } from "@/lib/demo/demo";
-import { listMatches, type SourceBadge } from "@/lib/server/match";
+import { listMatches, splitFixtures, type SourceBadge } from "@/lib/server/match";
 import type { MatchSummary } from "@/lib/providers/cricketdata";
 
 export const dynamic = "force-dynamic";
@@ -109,9 +109,7 @@ export default async function MatchDesk() {
   } catch (e) {
     data = { matches: [], sources: [], errors: [(e as Error).message] };
   }
-  const now = Date.now();
-  const upcoming = data.matches.filter((m) => !m.ended && new Date(m.startsAt).getTime() > now - 6 * 3600e3);
-  const recent = data.matches.filter((m) => m.ended).slice(-3).reverse();
+  const { upcoming, recent } = splitFixtures(data.matches);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">

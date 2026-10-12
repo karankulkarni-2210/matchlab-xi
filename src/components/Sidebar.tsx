@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { BarChart3, BookOpen, House, LogIn, LogOut, Users } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { cx } from "./ui";
@@ -29,9 +29,11 @@ export function Logo() {
 
 export function Sidebar({ email }: { email: string | null }) {
   const path = usePathname();
+  const router = useRouter();
   const signOut = async () => {
     await supabaseBrowser().auth.signOut();
-    window.location.href = "/";
+    router.replace("/");
+    router.refresh();
   };
   return (
     <>

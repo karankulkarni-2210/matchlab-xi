@@ -88,6 +88,14 @@ export async function listMatches(): Promise<{ matches: MatchSummary[]; sources:
   return { matches: t20, sources, errors };
 }
 
+/** Splits fixtures into upcoming (not ended, starting no more than 6 h ago) and recently completed. */
+export function splitFixtures(matches: MatchSummary[], nowMs: number = Date.now()) {
+  return {
+    upcoming: matches.filter((m) => !m.ended && new Date(m.startsAt).getTime() > nowMs - 6 * 3600e3),
+    recent: matches.filter((m) => m.ended).slice(-3).reverse(),
+  };
+}
+
 const historySource = (): SourceBadge => {
   const meta = historyMeta();
   return {

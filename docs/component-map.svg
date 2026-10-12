@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1330" width="2000" height="1330" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker><marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/></marker></defs>
+<rect width="2000" height="1330" fill="#e9f1ec"/><rect x="30" y="26" width="1940" height="1278" rx="28" fill="#ffffff"/>
+<text x="68" y="92" font-size="36" font-weight="800" fill="#16324f">MatchLab XI · Fantasy Cricket Match Day Optimizer</text>
+<text x="68" y="124" font-size="19" fill="#41607e">COMPONENTS MAP (as built, 12 Oct 2026)  /  Actor lanes × Trigger → Input → Context → Processing → AI → Output</text>
+<rect x="64" y="150" width="1872" height="52" rx="6" fill="#16324f"/>
+<text x="159.0" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">Actor</text>
+<text x="394.16666666666663" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">Trigger</text>
+<text x="674.4999999999999" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">Input</text>
+<text x="954.8333333333333" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">Context</text>
+<text x="1235.1666666666667" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">Processing</text>
+<text x="1515.5" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">AI</text>
+<text x="1795.8333333333333" y="183" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">Output</text>
+<rect x="254" y="202" width="1682" height="104" fill="#eef2ff"/>
+<rect x="64" y="202" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="248" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Aryan</text>
+<text x="159.0" y="272" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Human owner</text>
+<rect x="254" y="306" width="1682" height="104" fill="#eef6ff"/>
+<rect x="64" y="306" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="352" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">External data</text>
+<text x="159.0" y="376" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Cricket · weather · history</text>
+<rect x="254" y="410" width="1682" height="104" fill="#ecfdf3"/>
+<rect x="64" y="410" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="456" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Evidence store</text>
+<text x="159.0" y="480" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Supabase Postgres + RLS</text>
+<rect x="254" y="514" width="1682" height="104" fill="#fffbeb"/>
+<rect x="64" y="514" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="560" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Application</text>
+<text x="159.0" y="584" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Next.js server routes</text>
+<rect x="254" y="618" width="1682" height="104" fill="#f5f0ff"/>
+<rect x="64" y="618" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="664" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">AI model</text>
+<text x="159.0" y="688" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Gemini Flash (gemini-3.8-flash)</text>
+<rect x="254" y="722" width="1682" height="104" fill="#eef6ff"/>
+<rect x="64" y="722" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="768" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Team builder</text>
+<text x="159.0" y="792" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Deterministic TypeScript</text>
+<rect x="254" y="826" width="1682" height="104" fill="#fff1f5"/>
+<rect x="64" y="826" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="872" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Match review</text>
+<text x="159.0" y="896" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Aryan + server</text>
+<rect x="254" y="930" width="1682" height="104" fill="#fdf4ee"/>
+<rect x="64" y="930" width="190" height="104" fill="#16324f"/>
+<text x="159.0" y="976" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">Learning loop</text>
+<text x="159.0" y="1000" font-size="12.5" fill="#cbd5e1" text-anchor="middle">Code + Gemini + Aryan</text>
+<line x1="534.3333333333333" y1="202" x2="534.3333333333333" y2="1034" stroke="#ffffff" stroke-width="2"/>
+<line x1="814.6666666666666" y1="202" x2="814.6666666666666" y2="1034" stroke="#ffffff" stroke-width="2"/>
+<line x1="1095.0" y1="202" x2="1095.0" y2="1034" stroke="#ffffff" stroke-width="2"/>
+<line x1="1375.3333333333333" y1="202" x2="1375.3333333333333" y2="1034" stroke="#ffffff" stroke-width="2"/>
+<line x1="1655.6666666666665" y1="202" x2="1655.6666666666665" y2="1034" stroke="#ffffff" stroke-width="2"/>
+<rect x="266.0" y="210" width="256.3333333333333" height="88" rx="9" fill="#f7f5ff" stroke="#7c5cff" stroke-width="2.2"/>
+<text x="394.16666666666663" y="232" font-size="16.5" font-weight="700" fill="#7c5cff" text-anchor="middle">01 · Select match</text>
+<text x="394.16666666666663" y="251" font-size="13" fill="#1f2937" text-anchor="middle">Match Desk: live T20 fixtures</text>
+<text x="394.16666666666663" y="268" font-size="13" fill="#1f2937" text-anchor="middle">Lock / exclude players</text>
+<text x="394.16666666666663" y="287" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">app/page.tsx · /build</text>
+<rect x="546.3333333333333" y="210" width="256.3333333333333" height="88" rx="9" fill="#f3f8ff" stroke="#3b82f6" stroke-width="2.2"/>
+<text x="674.4999999999999" y="232" font-size="16.5" font-weight="700" fill="#3b82f6" text-anchor="middle">02 · Verify contest inputs</text>
+<text x="674.4999999999999" y="251" font-size="13" fill="#1f2937" text-anchor="middle">Credits, roles, XI via CSV/form</text>
+<text x="674.4999999999999" y="268" font-size="13" fill="#1f2937" text-anchor="middle">Rules confirm + source time</text>
+<text x="674.4999999999999" y="287" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">ContestEditor · api/contest</text>
+<rect x="546.3333333333333" y="314" width="256.3333333333333" height="88" rx="9" fill="#f3f8ff" stroke="#3b82f6" stroke-width="2.2"/>
+<text x="674.4999999999999" y="336" font-size="16.5" font-weight="700" fill="#3b82f6" text-anchor="middle">03 · Fetch / refresh</text>
+<text x="674.4999999999999" y="355" font-size="13" fill="#1f2937" text-anchor="middle">Fixtures, status, tour squad</text>
+<text x="674.4999999999999" y="372" font-size="13" fill="#1f2937" text-anchor="middle">Weather · T20I history</text>
+<text x="674.4999999999999" y="391" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">providers/*.ts</text>
+<rect x="826.6666666666666" y="418" width="256.3333333333333" height="88" rx="9" fill="#f2fbf5" stroke="#16a34a" stroke-width="2.2"/>
+<text x="954.8333333333333" y="440" font-size="16.5" font-weight="700" fill="#16a34a" text-anchor="middle">04 · Evidence snapshot</text>
+<text x="954.8333333333333" y="459" font-size="13" fill="#1f2937" text-anchor="middle">provider_cache + as-of + status</text>
+<text x="954.8333333333333" y="476" font-size="13" fill="#1f2937" text-anchor="middle">fresh / cached / stale / missing</text>
+<text x="954.8333333333333" y="495" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">providers/cache.ts</text>
+<rect x="1107.0" y="522" width="256.3333333333333" height="88" rx="9" fill="#fffaf0" stroke="#d97706" stroke-width="2.2"/>
+<text x="1235.1666666666667" y="544" font-size="16.5" font-weight="700" fill="#d97706" text-anchor="middle">05 · Prepare forecasts</text>
+<text x="1235.1666666666667" y="563" font-size="13" fill="#1f2937" text-anchor="middle">Model f1 · versioned weights</text>
+<text x="1235.1666666666667" y="580" font-size="13" fill="#1f2937" text-anchor="middle">base pts · coverage · ± · rank</text>
+<text x="1235.1666666666667" y="599" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">domain/forecast.ts</text>
+<rect x="1387.3333333333333" y="626" width="256.3333333333333" height="88" rx="9" fill="#fff5fa" stroke="#db2777" stroke-width="2.2"/>
+<text x="1515.5" y="648" font-size="16.5" font-weight="700" fill="#db2777" text-anchor="middle">06 · Interpret &amp; explain</text>
+<text x="1515.5" y="667" font-size="13" fill="#1f2937" text-anchor="middle">Evidence-ID-checked reasons</text>
+<text x="1515.5" y="684" font-size="13" fill="#1f2937" text-anchor="middle">C / VC + bench; cached by hash</text>
+<text x="1515.5" y="703" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">ai/explain.ts · ai/gemini.ts</text>
+<rect x="1107.0" y="730" width="256.3333333333333" height="88" rx="9" fill="#f3f8ff" stroke="#3b82f6" stroke-width="2.2"/>
+<text x="1235.1666666666667" y="752" font-size="16.5" font-weight="700" fill="#3b82f6" text-anchor="middle">07 · Optimize &amp; validate</text>
+<text x="1235.1666666666667" y="771" font-size="13" fill="#1f2937" text-anchor="middle">Exact branch-and-bound XI</text>
+<text x="1235.1666666666667" y="788" font-size="13" fill="#1f2937" text-anchor="middle">Credits, roles, teams, C≠VC</text>
+<text x="1235.1666666666667" y="807" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">domain/optimizer.ts · validate.ts</text>
+<rect x="1667.6666666666665" y="730" width="256.3333333333333" height="88" rx="9" fill="#fff7f2" stroke="#ea580c" stroke-width="2.2"/>
+<text x="1795.8333333333333" y="752" font-size="16.5" font-weight="700" fill="#ea580c" text-anchor="middle">08 · Aryan approves XI</text>
+<text x="1795.8333333333333" y="771" font-size="13" fill="#1f2937" text-anchor="middle">Freeze evidence + inputs (immutable)</text>
+<text x="1795.8333333333333" y="788" font-size="13" fill="#1f2937" text-anchor="middle">Save · Copy XI export</text>
+<text x="1795.8333333333333" y="807" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">server/teams.ts · api/teams</text>
+<rect x="1107.0" y="834" width="256.3333333333333" height="88" rx="9" fill="#f3f8ff" stroke="#3b82f6" stroke-width="2.2"/>
+<text x="1235.1666666666667" y="856" font-size="16.5" font-weight="700" fill="#3b82f6" text-anchor="middle">09 · Enter actual points</text>
+<text x="1235.1666666666667" y="875" font-size="13" fill="#1f2937" text-anchor="middle">Blank ≠ 0 · audited edits</text>
+<text x="1235.1666666666667" y="892" font-size="13" fill="#1f2937" text-anchor="middle">C/VC multipliers applied once</text>
+<text x="1235.1666666666667" y="911" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">review/Review.tsx · actuals</text>
+<rect x="1667.6666666666665" y="834" width="256.3333333333333" height="88" rx="9" fill="#fff7f2" stroke="#ea580c" stroke-width="2.2"/>
+<text x="1795.8333333333333" y="856" font-size="16.5" font-weight="700" fill="#ea580c" text-anchor="middle">10 · Compare performance</text>
+<text x="1795.8333333333333" y="875" font-size="13" fill="#1f2937" text-anchor="middle">MAE · signed bias · sample N</text>
+<text x="1795.8333333333333" y="892" font-size="13" fill="#1f2937" text-anchor="middle">Partial totals labelled</text>
+<text x="1795.8333333333333" y="911" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">domain/metrics.ts</text>
+<rect x="1107.0" y="938" width="256.3333333333333" height="88" rx="9" fill="#fffaf0" stroke="#d97706" stroke-width="2.2"/>
+<text x="1235.1666666666667" y="960" font-size="16.5" font-weight="700" fill="#d97706" text-anchor="middle">11 · Detect repeated errors</text>
+<text x="1235.1666666666667" y="979" font-size="13" fill="#1f2937" text-anchor="middle">Gate ≥30 results / ≥3 matches</text>
+<text x="1235.1666666666667" y="996" font-size="13" fill="#1f2937" text-anchor="middle">Bounded candidate + replay</text>
+<text x="1235.1666666666667" y="1015" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">domain/learning.ts</text>
+<rect x="1387.3333333333333" y="938" width="256.3333333333333" height="88" rx="9" fill="#fff5fa" stroke="#db2777" stroke-width="2.2"/>
+<text x="1515.5" y="960" font-size="16.5" font-weight="700" fill="#db2777" text-anchor="middle">12 · Gemini suggests</text>
+<text x="1515.5" y="979" font-size="13" fill="#1f2937" text-anchor="middle">Summarise pattern · propose</text>
+<text x="1515.5" y="996" font-size="13" fill="#1f2937" text-anchor="middle">Bounds-checked; no proof claim</text>
+<text x="1515.5" y="1015" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">server/learning.ts</text>
+<rect x="1667.6666666666665" y="938" width="256.3333333333333" height="88" rx="9" fill="#fff7f2" stroke="#ea580c" stroke-width="2.2"/>
+<text x="1795.8333333333333" y="960" font-size="16.5" font-weight="700" fill="#ea580c" text-anchor="middle">13 · Aryan accepts / rejects</text>
+<text x="1795.8333333333333" y="979" font-size="13" fill="#1f2937" text-anchor="middle">New version → future builds only</text>
+<text x="1795.8333333333333" y="996" font-size="13" fill="#1f2937" text-anchor="middle">History + rollback</text>
+<text x="1795.8333333333333" y="1015" font-size="11.5" fill="#64748b" text-anchor="middle" font-family="Menlo, Consolas, monospace">api/learning/decide</text>
+<path d="M522,254 L546,254" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M674,298 L674,314" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M674,402 L674,420 L813,420 L813,462 L827,462" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1083,462 L1103,462 L1103,508 L1235,508 L1235,522" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1363,566 L1373,566 L1373,670 L1387,670" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1516,714 L1516,728 L1235,728 L1235,730" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1363,774 L1668,774" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1796,818 L1796,824 L1383,824 L1383,878 L1363,878" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1363,878 L1668,878" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1796,922 L1796,928 L1235,928 L1235,938" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1363,982 L1387,982" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1644,982 L1668,982" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ar)"/>
+<path d="M1924,982 L1922,982 L1922,488 L1275,488 L1275,522" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arg)"/>
+<text x="1795.8333333333333" y="1050" font-size="13.5" font-weight="700" fill="#16a34a" text-anchor="middle">Approved version → next build</text>
+<rect x="64" y="1068" width="1872" height="62" rx="10" fill="#eef2ff"/>
+<text x="84" y="1092" font-size="14.5" font-weight="800" fill="#16324f">PERSISTENCE &amp; HOSTING</text>
+<text x="84" y="1115" font-size="15" fill="#1f2937">Supabase: contest_inputs · teams + team_players (frozen) · actuals + audit · weight_versions + decisions · caches  ·  Vercel: Next.js  ·  GitHub: source</text>
+<rect x="64" y="1142" width="1872" height="62" rx="10" fill="#ecfdf3"/>
+<text x="84" y="1166" font-size="14.5" font-weight="800" fill="#16324f">SAFETY RAILS (implemented)</text>
+<text x="84" y="1189" font-size="15" fill="#1f2937">RLS owner-only writes; demo rows isolated &amp; labelled synthetic · secrets server-only · Gemini output schema + ID checked · stale/unknown data shown, never invented</text>
+<rect x="64" y="1216" width="1872" height="62" rx="10" fill="#fdf4ee"/>
+<text x="84" y="1240" font-size="14.5" font-weight="800" fill="#16324f">THE CUT</text>
+<text x="84" y="1263" font-size="15" fill="#1f2937">Missing credits / lineups / rule confirmation block “Ready”. No rule relaxation. Aryan approves picks and weights. No auto-entry. No fabricated data.</text>
+<text x="68" y="1286" font-size="13" fill="#64748b">Dashed arrows = numbered handoffs; green rail = approved learning feedback loop. File paths are relative to src/lib or src/app in the repository.</text>
+</svg>

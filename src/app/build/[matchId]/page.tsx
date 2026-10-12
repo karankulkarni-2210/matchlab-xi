@@ -9,15 +9,20 @@ export const dynamic = "force-dynamic";
 export default async function BuildPage({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = await params;
   const user = await currentUser().catch(() => null);
+  let result: Awaited<ReturnType<typeof buildMatch>> | null = null;
+  let error: string | null = null;
   try {
-    const b = await buildMatch(decodeURIComponent(matchId));
-    return <BuildXI initial={{ ...b, template: templateExplanation(b) }} signedIn={!!user} />;
+    result = await buildMatch(decodeURIComponent(matchId));
   } catch (e) {
+    error = (e as Error).message;
+  }
+  if (result) return <BuildXI initial={{ ...result, template: templateExplanation(result) }} signedIn={!!user} />;
+  {
     return (
       <div className="mx-auto max-w-2xl space-y-4 py-10">
         <h1 className="text-2xl font-bold">Could not load this match</h1>
         <p role="alert" className="rounded-lg border border-bad/30 bg-bad/10 p-4 text-sm text-bad">
-          {(e as Error).message}
+          {error}
         </p>
         <p className="text-sm text-muted">If the CricketData daily quota is exhausted and no snapshot was cached, try again later. The labelled demo works without the provider.</p>
         <div className="flex gap-3">
