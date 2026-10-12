@@ -223,7 +223,7 @@ export async function proposeAdjustment(dataset: "demo" | "real") {
 
 export const DecideSchema = z.object({
   dataset: z.enum(["demo", "real"]),
-  versionId: z.string().uuid(),
+  versionId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid id"),
   decision: z.enum(["accept", "reject", "rollback"]),
   note: z.string().max(300).optional(),
 });

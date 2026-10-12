@@ -149,7 +149,7 @@ export async function loadTeam(teamId: string) {
 }
 
 export const ActualsSchema = z.object({
-  entries: z.array(z.object({ teamPlayerId: z.string().uuid(), value: z.union([z.string().max(12), z.number(), z.null()]) })).min(1).max(11),
+  entries: z.array(z.object({ teamPlayerId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Invalid id"), value: z.union([z.string().max(12), z.number(), z.null()]) })).min(1).max(11),
 });
 
 /** Saves actuals separately from predictions. Blank deletes a stored actual; "0" stores a real zero. */
