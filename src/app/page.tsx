@@ -112,6 +112,8 @@ export default async function MatchDesk() {
   }
   const { upcoming, recent } = splitFixtures(data.matches);
 
+  const providerDown = data.errors.length > 0 || data.sources.some((x) => x.status === "stale" || x.status === "missing");
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -119,52 +121,55 @@ export default async function MatchDesk() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime">Match Desk</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Pick a match. See the evidence.</h1>
           <p className="mt-1 max-w-2xl text-muted">
-            Live T20 fixtures from CricketData, player and venue history from Cricsheet, weather from Open-Meteo. Every number shows where it came from and how fresh it is.
+            Start with the demo match to run the whole loop: build an XI, review actual points, and see the Learning Lab adjust. Live fixtures from CricketData appear below when the provider is available.
           </p>
         </div>
       </header>
 
-      <section aria-labelledby="up">
-        <h2 id="up" className="mb-3 text-sm font-semibold text-muted">
-          Upcoming T20 fixtures (real)
+      <section aria-labelledby="demo" className="space-y-3">
+        <h2 id="demo" className="text-sm font-semibold text-muted">
+          Start here · demo match (synthetic)
         </h2>
-        {upcoming.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {upcoming.map((m) => (
-              <MatchCard key={m.id} m={m} />
-            ))}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <MatchCard m={{ ...DEMO_MATCH, teams: [...DEMO_MATCH.teams] as [string, string], teamShort: [...DEMO_MATCH.teamShort] as [string, string] }} demo />
+          <div className="panel space-y-3 p-4 text-sm text-muted">
+            <p className="font-semibold text-warm">What the demo includes</p>
+            <p>Fictional teams with confirmed lineups and contest credits, so you can build a Ready XI. Then review 9 synthetic past matches and run the Learning Lab.</p>
+            <p className="text-xs text-faint">Everything in the demo is synthetic and labelled. It is never mixed with real data or real accuracy metrics.</p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Link className="focus-ring rounded-lg border border-line-2 px-3 py-1.5 text-warm hover:border-lime/50" href="/review">
+                Match Review
+              </Link>
+              <Link className="focus-ring rounded-lg border border-line-2 px-3 py-1.5 text-warm hover:border-lime/50" href="/learning">
+                Learning Lab
+              </Link>
+            </div>
           </div>
-        ) : (
-          <div className="panel p-6 text-sm text-muted">
-            No upcoming T20 fixtures could be loaded right now{data.errors.length ? " (see source errors below)" : ""}. The labelled demo below still works end to end.
-          </div>
-        )}
+        </div>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <section aria-labelledby="demo" className="space-y-3">
-          <h2 id="demo" className="text-sm font-semibold text-muted">
-            Try the full loop with demo data
+        <section aria-labelledby="up" className="space-y-3">
+          <h2 id="up" className="text-sm font-semibold text-muted">
+            Live T20 fixtures (CricketData)
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <MatchCard m={{ ...DEMO_MATCH, teams: [...DEMO_MATCH.teams] as [string, string], teamShort: [...DEMO_MATCH.teamShort] as [string, string] }} demo />
-            <div className="panel space-y-3 p-4 text-sm text-muted">
-              <p className="font-semibold text-warm">What the demo includes</p>
-              <p>Fictional teams with confirmed lineups and contest credits, so you can build a Ready XI, then review 9 synthetic past matches and run the Learning Lab without signing in.</p>
-              <p className="text-xs text-faint">Everything in the demo is synthetic and labelled. It is never mixed with real data or real accuracy metrics.</p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Link className="focus-ring rounded-lg border border-line-2 px-3 py-1.5 text-warm hover:border-lime/50" href="/review">
-                  Match Review
-                </Link>
-                <Link className="focus-ring rounded-lg border border-line-2 px-3 py-1.5 text-warm hover:border-lime/50" href="/learning">
-                  Learning Lab
-                </Link>
-              </div>
+          {providerDown && (
+            <p role="status" className="rounded-lg border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn">
+              Live provider unavailable right now (CricketData free plan: 100 calls/day). Showing snapshots saved earlier with their age; the demo above is unaffected.
+            </p>
+          )}
+          {upcoming.length ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {upcoming.map((m) => (
+                <MatchCard key={m.id} m={m} />
+              ))}
             </div>
-          </div>
+          ) : (
+            <div className="panel p-6 text-sm text-muted">No live fixtures to show right now. The demo match above works end to end.</div>
+          )}
           {recent.length > 0 && (
             <>
-              <h2 className="pt-3 text-sm font-semibold text-muted">Recently completed (enter actuals in Match Review after saving a team)</h2>
+              <h2 className="pt-3 text-sm font-semibold text-muted">Recently completed</h2>
               <ul className="panel divide-y divide-line text-sm">
                 {recent.map((m) => (
                   <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
@@ -178,7 +183,7 @@ export default async function MatchDesk() {
             </>
           )}
         </section>
-        <Sources sources={data.sources} errors={data.errors} />
+        <Sources sources={data.sources} errors={[]} />
       </div>
     </div>
   );

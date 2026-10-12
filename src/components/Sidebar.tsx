@@ -6,7 +6,7 @@ import { cx } from "./ui";
 
 const NAV = [
   { href: "/", label: "Match Desk", icon: House, match: (p: string) => p === "/" },
-  { href: "/build", label: "Build XI", icon: Users, match: (p: string) => p.startsWith("/build") },
+  { href: "/build/demo-hh-dd", label: "Build XI", icon: Users, match: (p: string) => p.startsWith("/build") },
   { href: "/review", label: "Match Review", icon: BarChart3, match: (p: string) => p.startsWith("/review") },
   { href: "/learning", label: "Learning Lab", icon: BookOpen, match: (p: string) => p.startsWith("/learning") },
 ];

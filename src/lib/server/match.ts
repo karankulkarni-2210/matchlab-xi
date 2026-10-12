@@ -91,7 +91,7 @@ export async function listMatches(): Promise<{ matches: MatchSummary[]; sources:
 /** Splits fixtures into upcoming (not ended, starting no more than 6 h ago) and recently completed. */
 export function splitFixtures(matches: MatchSummary[], nowMs: number = Date.now()) {
   return {
-    upcoming: matches.filter((m) => !m.ended && new Date(m.startsAt).getTime() > nowMs - 6 * 3600e3),
+    upcoming: matches.filter((m) => m.hasSquad && !m.ended && new Date(m.startsAt).getTime() > nowMs - 6 * 3600e3),
     recent: matches.filter((m) => m.ended).slice(-3).reverse(),
   };
 }

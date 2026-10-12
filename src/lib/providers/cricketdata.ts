@@ -18,7 +18,8 @@ export const TRACKED_SERIES = [
 ];
 
 const Info = z.object({ hitsToday: z.number().optional(), hitsLimit: z.number().optional() }).passthrough();
-const Envelope = z.object({ status: z.string(), reason: z.string().optional(), info: Info.optional(), data: z.unknown() });
+// `data` is omitted on failures (e.g. quota exceeded), so it must be optional.
+const Envelope = z.object({ status: z.string(), reason: z.string().optional(), info: Info.optional(), data: z.unknown().optional() });
 
 const MatchRaw = z
   .object({
@@ -86,7 +87,7 @@ export const quotaSnapshot = () => lastQuota;
 async function call(pathAndQuery: string, revalidate: number, setAsOf?: (d: string | null) => void) {
   if (!env.cricketDataApiKey) throw new ProviderError("CRICKETDATA_API_KEY not configured", "config");
   if (lastQuota && lastQuota.hitsToday >= lastQuota.hitsLimit - 5)
-    throw new ProviderError(`Daily quota nearly exhausted (${lastQuota.hitsToday}/${lastQuota.hitsLimit}); serving cache`, "quota");
+    throw new ProviderError(`CricketData daily limit nearly used (${lastQuota.hitsToday}/${lastQuota.hitsLimit}); showing saved snapshots`, "quota");
   const sep = pathAndQuery.includes("?") ? "&" : "?";
   // _d (UTC day) bounds how long any cached provider response — including a quota failure — can live: quota resets daily.
   const day = new Date().toISOString().slice(0, 10);
@@ -98,7 +99,10 @@ async function call(pathAndQuery: string, revalidate: number, setAsOf?: (d: stri
     lastQuota = { hitsToday: info.hitsToday, hitsLimit: info.hitsLimit, at: new Date().toISOString() };
   if (status !== "success") {
     const quota = /limit|quota|hits|blocked/i.test(reason ?? "");
-    throw new ProviderError(`CricketData: ${reason ?? "request failed"}`, quota ? "quota" : "http");
+    throw new ProviderError(
+      quota ? "CricketData free-plan daily limit (100 calls) reached — resets at 05:30 IST" : `CricketData: ${reason ?? "request failed"}`,
+      quota ? "quota" : "http",
+    );
   }
   return data;
 }
