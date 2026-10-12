@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, CircleAlert, ClipboardCopy, CloudRain, Coins, Database, FileSpreadsheet, MapPin, RefreshCw, Save, ShieldCheck, Sparkles, TriangleAlert, Users, X } from "lucide-react";
+import { CheckCircle2, CircleAlert, ClipboardCopy, CloudRain, Coins, Database, FileSpreadsheet, FlaskConical, MapPin, RefreshCw, Save, ShieldCheck, Sparkles, TriangleAlert, Users, X } from "lucide-react";
 import { ago, cx, FreshnessPill, Pill, RoleChip } from "@/components/ui";
 import type { TeamSelection } from "@/lib/domain/types";
 import { ContestEditor } from "./ContestEditor";
@@ -26,7 +26,8 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
   const tplOnly = (t: BuildResult["template"]): ExplainResponse | null => (t ? { status: "template", output: null, template: t, model: "", generatedAt: null } : null);
   const [explain, setExplain] = useState<ExplainResponse | null>(tplOnly(initial.template));
   const [locked, setLocked] = useState<Set<string>>(new Set());
-  const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [excluded, setExcluded] = useState<Set<string>>(() => new Set(initial.practice?.autoExcluded ?? []));
+  const practice = !!initial.practice?.active;
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ tone: "ok" | "bad" | "warn"; text: string; link?: string } | null>(null);
   const [editor, setEditor] = useState(false);
@@ -43,7 +44,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
       setBusy(label);
       setNotice(null);
       try {
-        const r = await postJson<BuildResult>("/api/build", { matchId: m.id, ...body });
+        const r = await postJson<BuildResult>("/api/build", { matchId: m.id, practice, ...body });
         setData(r);
         setExplain(tplOnly(r.template));
         return r;
@@ -54,7 +55,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
         setBusy(null);
       }
     },
-    [m.id],
+    [m.id, practice],
   );
 
   const withSelection = (sel: TeamSelection, label: string) => run(label, { selection: sel });
@@ -88,7 +89,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
     setBusy("explain");
     setNotice(null);
     try {
-      const r = await postJson<ExplainResponse>("/api/explain", { matchId: m.id, selection: data.team, regenerate });
+      const r = await postJson<ExplainResponse>("/api/explain", { matchId: m.id, selection: data.team, regenerate, practice });
       setExplain(r);
       if (r.status !== "fresh" && r.status !== "cached")
         setNotice({ tone: "warn", text: `Gemini ${r.status.replace("_", " ")}: ${r.error ?? ""}. Showing reasons built directly from the evidence instead.` });
@@ -111,6 +112,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
         captainKey: data.team.captainKey,
         viceCaptainKey: data.team.viceCaptainKey,
         explanation: explain?.output ?? explain?.template ?? undefined,
+        practice,
       });
       setNotice({ tone: "ok", text: `Frozen and saved (${r.status === "ready" ? "Ready" : "valid · provisional"}). Enter actual points after the match.`, link: `/review?team=${r.id}` });
     } catch (e) {
@@ -129,7 +131,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
         .map((p) => `${p.name}${p.key === t.captainKey ? " (C)" : p.key === t.viceCaptainKey ? " (VC)" : ""} ${p.credits ?? "?"}cr`)
         .join(", ");
     const text = [
-      `MatchLab XI — ${m.teamShort[0]} vs ${m.teamShort[1]} · ${m.title}${data.bundle.isDemo ? " (SYNTHETIC DEMO)" : ""}`,
+      `MatchLab XI — ${m.teamShort[0]} vs ${m.teamShort[1]} · ${m.title}${data.bundle.isDemo ? " (SYNTHETIC DEMO)" : practice ? " (PRACTICE — illustrative credits, not Dream11)" : ""}`,
       `Status: ${v?.status === "ready" ? "Ready" : v?.status === "valid_provisional" ? "Valid, provisional" : "Invalid"} · ${data.totals.credits ?? "?"}/${rules.creditCap} credits · ${rules.label}`,
       `C: ${fById.get(t.captainKey ?? "")?.name ?? "-"} · VC: ${fById.get(t.viceCaptainKey ?? "")?.name ?? "-"}`,
       `WK: ${byRole("WK")}`,
@@ -197,6 +199,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Build your match-day XI</h1>
             {data.bundle.isDemo && <Pill tone="info">Synthetic demo</Pill>}
+            {practice && <Pill tone="info">Practice credits</Pill>}
           </div>
           <p className="mt-1 text-lg font-semibold">
             {m.teams[0]} vs {m.teams[1]} <span className="font-normal text-muted">· {m.title}</span>
@@ -218,7 +221,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
             <Coins size={20} className="text-lime" aria-hidden />
             <div>
               <div className="num font-semibold">{data.totals.credits ?? "?"}/{rules.creditCap}</div>
-              <div className="text-[11px] text-muted">credits</div>
+              <div className="text-[11px] text-muted">{practice ? "illustrative credits" : "credits"}</div>
             </div>
           </div>
           <div className="panel flex items-center gap-2 px-3 py-2">
@@ -231,13 +234,35 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
         </div>
       </header>
 
-      {data.contest.notes.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn">
-          <span>{data.contest.notes.join(" ")}</span>
-          <button onClick={() => setEditor(true)} className="focus-ring inline-flex items-center gap-1 rounded-md border border-warn/40 px-3 py-1 font-medium">
-            <FileSpreadsheet size={14} /> {signedIn ? "Enter contest data" : "Preview contest import"}
-          </button>
+      {practice ? (
+        <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-wk/40 bg-wk/10 px-4 py-3 text-sm text-wk">
+          <span className="flex items-start gap-2">
+            <FlaskConical size={16} className="mt-0.5 shrink-0" aria-hidden />
+            <span>
+              <b>Practice mode.</b> {data.practice.filled} credits are illustrative values generated by MatchLab from projected points (6.5–11, stronger projection = pricier) — <b>not Dream11 credits</b>. Forecasts, evidence and rules are real; teams here are never marked Ready.
+              {data.practice.autoExcluded.length > 0 && ` ${data.practice.autoExcluded.length} players with no T20I in the last 12 months start excluded (select one to allow).`}
+            </span>
+          </span>
+          <Link href={`/build/${m.id}`} className="focus-ring rounded-md border border-wk/40 px-3 py-1 font-medium">
+            Exit practice mode
+          </Link>
         </div>
+      ) : (
+        data.contest.notes.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-warn/30 bg-warn/10 px-4 py-3 text-sm text-warn">
+            <span>{data.contest.notes.join(" ")}</span>
+            <div className="flex flex-wrap gap-2">
+              {data.practice.available && (
+                <Link href={`/build/${m.id}?practice=1`} className="focus-ring inline-flex items-center gap-1 rounded-md bg-wk px-3 py-1 font-semibold text-ink">
+                  <FlaskConical size={14} /> Try practice mode (illustrative credits)
+                </Link>
+              )}
+              <button onClick={() => setEditor(true)} className="focus-ring inline-flex items-center gap-1 rounded-md border border-warn/40 px-3 py-1 font-medium">
+                <FileSpreadsheet size={14} /> {signedIn ? "Enter contest data" : "Preview contest import"}
+              </button>
+            </div>
+          </div>
+        )
       )}
 
       <div className="grid items-start gap-4 lg:grid-cols-[300px_minmax(0,1fr)] lg:grid-rows-[auto_1fr] xl:grid-cols-[300px_minmax(0,1fr)_400px]">
@@ -279,6 +304,11 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
                 ))}
               </ul>
               <p className="text-sm text-muted">MatchLab does not relax rules or estimate credits. Enter your contest data to continue — forecasts for every player are below.</p>
+              {data.practice.available && !practice && (
+                <Link href={`/build/${m.id}?practice=1`} className="focus-ring inline-flex items-center gap-2 rounded-lg bg-wk px-4 py-2 text-sm font-semibold text-ink">
+                  <FlaskConical size={15} /> Explore with illustrative practice credits
+                </Link>
+              )}
             </div>
           )}
 

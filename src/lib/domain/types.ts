@@ -105,7 +105,7 @@ export interface Violation {
 }
 
 export interface ReadinessBlocker {
-  code: "RULES_UNCONFIRMED" | "LINEUP_NOT_CONFIRMED" | "PLAYER_NOT_CONFIRMED_XI" | "CONTEST_SOURCE_MISSING";
+  code: "RULES_UNCONFIRMED" | "LINEUP_NOT_CONFIRMED" | "PLAYER_NOT_CONFIRMED_XI" | "CONTEST_SOURCE_MISSING" | "ILLUSTRATIVE_CREDITS";
   message: string;
   players?: string[];
 }

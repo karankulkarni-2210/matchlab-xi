@@ -14,7 +14,8 @@ const Body = z.object({
     })
     .optional(),
   lockedKeys: z.array(z.string().max(80)).max(11).optional(),
-  excludedKeys: z.array(z.string().max(80)).max(40).optional(),
+  excludedKeys: z.array(z.string().max(80)).max(60).optional(),
+  practice: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {

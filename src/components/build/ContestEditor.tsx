@@ -23,7 +23,8 @@ export function ContestEditor({ data, signedIn, onClose, onSaved }: { data: Buil
   const [csvMsg, setCsvMsg] = useState<{ errors: { row: number; message: string }[]; matched: number; added: number } | null>(null);
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const readOnly = data.bundle.isDemo || !signedIn;
+  const isPractice = data.contest.origin === "practice";
+  const readOnly = data.bundle.isDemo || !signedIn || isPractice;
   const known = useMemo(() => players.filter((p) => p.credits !== null).length, [players]);
 
   const update = (key: string, patch: Partial<ContestPlayer>) => setPlayers((ps) => ps.map((p) => (p.key === key ? { ...p, ...patch } : p)));
@@ -95,7 +96,11 @@ export function ContestEditor({ data, signedIn, onClose, onSaved }: { data: Buil
         <div className="scroll-thin flex-1 space-y-5 overflow-y-auto p-4">
           {readOnly && (
             <div className="rounded-lg border border-warn/30 bg-warn/10 p-3 text-sm text-warn">
-              {data.bundle.isDemo ? "The demo contest is fixed (synthetic). Pick a real match to enter your own contest data." : "Sign in to save contest data. You can still preview a CSV here."}
+              {data.bundle.isDemo
+                ? "The demo contest is fixed (synthetic). Pick a real match to enter your own contest data."
+                : isPractice
+                  ? "Practice credits are illustrative and cannot be saved as contest data. Exit practice mode to enter your real Dream11 credits."
+                  : "Sign in to save contest data. You can still preview a CSV here."}
             </div>
           )}
           <section className="grid gap-3 sm:grid-cols-2">

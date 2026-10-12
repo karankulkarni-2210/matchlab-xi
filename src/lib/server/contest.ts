@@ -5,7 +5,7 @@ import { demoContest } from "@/lib/demo/demo";
 import type { MatchBundle } from "./match";
 import { readClient, type Scope } from "./scope";
 
-export type ContestOrigin = "demo" | "owner" | "provisional";
+export type ContestOrigin = "demo" | "owner" | "provisional" | "practice";
 
 export interface LoadedContest {
   contest: ContestInput;

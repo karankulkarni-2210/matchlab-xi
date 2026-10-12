@@ -7,13 +7,14 @@ import { currentUser } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Build XI · MatchLab XI" };
 
-export default async function BuildPage({ params }: { params: Promise<{ matchId: string }> }) {
+export default async function BuildPage({ params, searchParams }: { params: Promise<{ matchId: string }>; searchParams: Promise<{ practice?: string }> }) {
   const { matchId } = await params;
+  const practice = (await searchParams).practice === "1";
   const user = await currentUser().catch(() => null);
   let result: Awaited<ReturnType<typeof buildMatch>> | null = null;
   let error: string | null = null;
   try {
-    result = await buildMatch(decodeURIComponent(matchId));
+    result = await buildMatch(decodeURIComponent(matchId), { practice });
   } catch (e) {
     error = (e as Error).message;
   }

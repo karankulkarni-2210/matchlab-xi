@@ -4,6 +4,7 @@ import { benchReasons, eligibleCandidates, optimizeTeam, type BenchReason, type 
 import type { PlayerForecast, TeamSelection, TeamValidation, Violation } from "@/lib/domain/types";
 import { validateTeam } from "@/lib/domain/validate";
 import { round } from "@/lib/domain/weights";
+import { PRACTICE_LABEL, withIllustrativeCredits } from "@/lib/domain/practice";
 import { matchPlayer } from "@/lib/providers/history";
 import { loadContest, type LoadedContest } from "./contest";
 import { getMatchBundle, type MatchBundle } from "./match";
@@ -33,16 +34,18 @@ export interface BuildResult {
   evidence: EvidenceItem[];
   totals: { predicted: number | null; credits: number | null };
   coverageSummary: { mean: number; matched: number; total: number };
+  practice: { active: boolean; available: boolean; filled: number; autoExcluded: string[] };
 }
 
 export async function buildMatch(
   matchId: string,
-  opts: { selection?: TeamSelection; lockedKeys?: string[]; excludedKeys?: string[] } = {},
+  opts: { selection?: TeamSelection; lockedKeys?: string[]; excludedKeys?: string[]; practice?: boolean } = {},
 ): Promise<BuildResult> {
   const bundle = await getMatchBundle(matchId);
   const scope = await resolveScope(matchId === DEMO_MATCH_ID ? "demo" : "real");
-  const [loaded, weights] = await Promise.all([loadContest(bundle, scope), getActiveWeights(scope)]);
-  const { contest } = loaded;
+  const [loadedRaw, weights] = await Promise.all([loadContest(bundle, scope), getActiveWeights(scope)]);
+  let loaded = loadedRaw;
+  let contest = loaded.contest;
   const [teamA, teamB] = bundle.match.teams;
 
   const ctx: ForecastContext = {
@@ -70,13 +73,29 @@ export async function buildMatch(
     }
     const daysSinceLast = lastT20I ? Math.round((Date.parse(bundle.match.startsAt) - Date.parse(lastT20I)) / 86400000) : null;
     // Evidence-quality flag only: a long gap since the last T20I is shown, never used to guess the XI.
-    const staleHistory = daysSinceLast !== null && daysSinceLast > 270;
+    const staleHistory = daysSinceLast !== null && daysSinceLast > 365;
     return { ...forecastPlayer(p, history, ctx), matchMethod: method, historyName, lastT20I, staleHistory };
   });
+
+  // Practice mode: fill ONLY unknown credits with labelled illustrative values (never on the demo, never overwriting owner data).
+  const practiceAvailable = !bundle.isDemo && contest.players.some((p) => p.credits === null);
+  const practiceActive = !!opts.practice && practiceAvailable;
+  let autoExcluded: string[] = [];
+  let filledCount = 0;
+  if (practiceActive) {
+    const { players, filled } = withIllustrativeCredits(contest.players, new Map(forecasts.map((f) => [f.key, f.predictedBase])));
+    filledCount = filled.length;
+    const creditBy = new Map(players.map((p) => [p.key, p.credits]));
+    for (const f of forecasts) f.credits = creditBy.get(f.key) ?? f.credits;
+    contest = { ...contest, players, sourceLabel: PRACTICE_LABEL };
+    loaded = { ...loaded, contest, origin: "practice", notes: [`Practice mode: ${filledCount} credits are illustrative (not from Dream11). Teams built here can be explored and saved, but are never marked Ready.`] };
+    // Players with no T20I in the data for 12+ months start excluded (visible, one click to allow) — a preference, not a lineup claim.
+    if (!opts.excludedKeys) autoExcluded = forecasts.filter((f) => f.staleHistory).map((f) => f.key);
+  }
   const fMap = new Map(forecasts.map((f) => [f.key, f]));
 
   const contestCtx = { rulesConfirmedAt: contest.rulesConfirmedAt, lineupsConfirmed: contest.lineupsConfirmed, sourceAsOf: contest.sourceAsOf, teamA, teamB };
-  const { candidates, exclusions } = eligibleCandidates(contest.players, fMap, opts.excludedKeys);
+  const { candidates, exclusions } = eligibleCandidates(contest.players, fMap, opts.excludedKeys ?? autoExcluded);
 
   let team: TeamSelection | null = null;
   let optimizer: BuildResult["optimizer"] = null;
@@ -88,6 +107,10 @@ export async function buildMatch(
     if (r.feasible) team = { playerKeys: r.playerKeys, captainKey: r.captainKey, viceCaptainKey: r.viceCaptainKey };
   }
   const validation = team ? validateTeam(team, contest.players, contest.rules, contestCtx) : null;
+  if (validation && practiceActive) {
+    validation.readinessBlockers.unshift({ code: "ILLUSTRATIVE_CREDITS", message: "Credits are illustrative practice values, not from your Dream11 contest — not submittable." });
+    if (validation.status === "ready") validation.status = "valid_provisional";
+  }
   const bench = team && validation ? benchReasons(contest.players, fMap, { ...team }, contest.rules, exclusions) : [];
 
   let predicted: number | null = null;
@@ -123,6 +146,7 @@ export async function buildMatch(
       matched,
       total: forecasts.length,
     },
+    practice: { active: practiceActive, available: practiceAvailable, filled: filledCount, autoExcluded },
   };
 }
 
@@ -168,7 +192,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
     kind: "contest",
     title: `Contest data: ${c.sourceLabel}`,
     detail: `${c.players.filter((p) => p.credits !== null).length}/${c.players.length} credits known; lineups confirmed — ${bundle.match.teams[0]}: ${c.lineupsConfirmed.teamA ? "yes" : "no"}, ${bundle.match.teams[1]}: ${c.lineupsConfirmed.teamB ? "yes" : "no"}.`,
-    source: loaded.origin === "demo" ? "Synthetic demo" : loaded.origin === "owner" ? "Owner-entered" : "Provider squad",
+    source: loaded.origin === "demo" ? "Synthetic demo" : loaded.origin === "owner" ? "Owner-entered" : loaded.origin === "practice" ? "Practice mode (illustrative credits)" : "Provider squad",
     asOf: c.sourceAsOf,
   });
   ev.push({

@@ -13,6 +13,7 @@ export const SaveTeamSchema = z.object({
   captainKey: z.string().min(1).max(80),
   viceCaptainKey: z.string().min(1).max(80),
   explanation: z.unknown().optional(),
+  practice: z.boolean().optional(),
 });
 
 export class HttpError extends Error {
@@ -33,6 +34,7 @@ export class HttpError extends Error {
 export async function saveTeam(input: z.infer<typeof SaveTeamSchema>) {
   const b = await buildMatch(input.matchId, {
     selection: { playerKeys: input.playerKeys, captainKey: input.captainKey, viceCaptainKey: input.viceCaptainKey },
+    practice: input.practice,
   });
   if (!b.validation?.valid) throw new HttpError(422, "Team is not valid; nothing was saved.", b.validation?.violations);
   const scope: Scope = await resolveScope(input.matchId === DEMO_MATCH_ID ? "demo" : "real");
@@ -49,7 +51,7 @@ export async function saveTeam(input: z.infer<typeof SaveTeamSchema>) {
       ...f,
       is_synthetic: scope.kind === "demo",
       match_id: b.bundle.match.id,
-      match_label: `${b.bundle.match.teamShort[0]} vs ${b.bundle.match.teamShort[1]} · ${b.bundle.match.title}`,
+      match_label: `${b.bundle.match.teamShort[0]} vs ${b.bundle.match.teamShort[1]} · ${b.bundle.match.title}${b.practice.active ? " · practice credits" : ""}`,
       match_start: b.bundle.match.startsAt,
       match_snapshot: { match: b.bundle.match, venue: b.bundle.venue, weather: b.bundle.weather, sources: b.bundle.sources, historyAsOf: b.bundle.historyAsOf },
       rule_id: rules.id,

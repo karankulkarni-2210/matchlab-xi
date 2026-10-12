@@ -105,6 +105,12 @@ Checks: `npm test` (vitest), `npx tsc --noEmit`, `npm run build`.
 
 Deploy: the Vercel project `matchlab-xi` has the variables above set for Production and Preview; `npx vercel deploy --prod`.
 
+## Practice mode (demonstrating a real fixture before contest data exists)
+
+Open any real fixture and choose **Try practice mode (illustrative credits)**, or add `?practice=1` to the Build XI URL. MatchLab fills **only unknown** credits with illustrative values, `clamp(roundToHalf(6.5 + 4.5·p), 6.5, 11)`, where `p` is the player's percentile of projected base points, so the 100-credit cap forces real trade-offs. Players with no T20I in the data for 12+ months start excluded; this is a visible preference you can override, not a lineup claim. Everything else (live fixture, squad, Cricsheet evidence, weather, rules, optimizer, Gemini reasons) is real.
+
+Practice teams are labelled everywhere ("Practice credits", "illustrative credits", "· practice credits" on saved teams), always carry the `ILLUSTRATIVE_CREDITS` readiness blocker, and can never be marked **Ready**. The contest editor refuses to save practice credits as contest data. Example (12 Oct 2026, India vs West Indies 4th T20I): an exact search over ~267k nodes returned a 100-credit XI with C Shamar Joseph and VC Shreyas Iyer, status *Valid · provisional*.
+
 ## Using it for a real match (owner)
 
 1. Sign in, open the fixture on Match Desk → **Build XI**.
@@ -115,7 +121,7 @@ Deploy: the Vercel project `matchlab-xi` has the variables above set for Product
 ## Known limitations (honest)
 
 - **Dream11 rules** could not be verified from an official machine-readable source, so they're configurable presets that you confirm per contest. MatchLab never submits teams to Dream11.
-- **Credits/contest roles** have no free API and must be entered by the owner. Until then the real match shows forecasts but no valid XI, by design.
+- **Credits/contest roles** have no free API and must be entered by the owner. Until then the real match shows forecasts but no valid XI, by design, unless you explicitly switch to the labelled practice mode.
 - **CricketData `match_squad`** returns the whole tour squad (ODI + T20I, 28 India players) and costs 10 hits on the free plan. Some players have no role (shown as unknown). Lineups are not available pre-toss.
 - **History coverage:** Cricsheet data currently ends 2026-10-06, so the 2nd/3rd T20Is of the current India–West Indies series are not in the evidence yet. Only men's T20Is are loaded (no IPL or women's matches). Some venues have tiny samples (Hyderabad: 2 T20Is), and the venue index shrinks heavily toward neutral. Names are matched by exact/alias/initials within team; ambiguous matches are left unmatched (coverage 0) rather than guessed, and you can set `history_name` in the CSV.
 - **Forecasts are approximate.** Historical points use an approximation of Dream11 scoring, and uncertainty is a spread, not a calibrated interval. No accuracy claims are made. The demo learning history is **synthetic** and excluded from real metrics, and one real match never establishes improvement.

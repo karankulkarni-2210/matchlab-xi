@@ -12,12 +12,13 @@ const Body = z.object({
     viceCaptainKey: z.string().max(80),
   }),
   regenerate: z.boolean().optional(),
+  practice: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
   try {
     const body = Body.parse(await req.json());
-    const b = await buildMatch(body.matchId, { selection: body.selection });
+    const b = await buildMatch(body.matchId, { selection: body.selection, practice: body.practice });
     if (!b.validation?.valid) return NextResponse.json({ error: "Team is invalid; fix violations before generating reasons." }, { status: 422 });
     const r = await explainTeam(b, !!body.regenerate);
     return NextResponse.json(r);
