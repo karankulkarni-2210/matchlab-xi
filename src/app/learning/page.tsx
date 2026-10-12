@@ -12,13 +12,8 @@ export default async function LearningPage({ searchParams }: { searchParams: Pro
   const dataset = sp.ds === "real" ? "real" : "demo";
   const data = await learningOverview(dataset);
   const env = envStatus();
-  const canAct = dataset === "demo" ? env.supabaseSecret : data.scope === "owner";
-  const actHint =
-    dataset === "real" && data.scope !== "owner"
-      ? "Sign in to analyse your own history and approve weight changes."
-      : dataset === "demo" && !env.supabaseSecret
-        ? "Demo sandbox writes are disabled on this server (no service key)."
-        : null;
+  const canAct = env.supabaseSecret;
+  const actHint = env.supabaseSecret ? null : "Saving is disabled on this server (no SUPABASE_SECRET_KEY), so proposals and decisions can't be stored.";
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-5">
@@ -34,22 +29,13 @@ export default async function LearningPage({ searchParams }: { searchParams: Pro
               Demo (synthetic)
             </Link>
             <Link role="tab" aria-selected={dataset === "real"} href="/learning?ds=real" className={cx("focus-ring rounded-lg px-3 py-1.5", dataset === "real" ? "bg-lime font-semibold text-ink" : "text-muted")}>
-              My real matches
+              Aryan&apos;s matches
             </Link>
           </div>
           {dataset === "demo" ? <Pill tone="info">Illustrative synthetic history · not measured performance</Pill> : <Pill tone="muted">Real efficacy metrics · synthetic data excluded</Pill>}
         </div>
       </header>
-      {dataset === "real" && data.scope !== "owner" ? (
-        <div className="panel p-6 text-sm text-muted">
-          <Link href="/login" className="text-lime underline">
-            Sign in
-          </Link>{" "}
-          to see learning metrics for your own saved teams. Your records are private (row-level security).
-        </div>
-      ) : (
-        <Learning data={data} canAct={canAct} actHint={actHint} />
-      )}
+      <Learning data={data} canAct={canAct} actHint={actHint} />
     </div>
   );
 }

@@ -42,7 +42,7 @@ export async function buildMatch(
   opts: { selection?: TeamSelection; lockedKeys?: string[]; excludedKeys?: string[]; practice?: boolean } = {},
 ): Promise<BuildResult> {
   const bundle = await getMatchBundle(matchId);
-  const scope = await resolveScope(matchId === DEMO_MATCH_ID ? "demo" : "real");
+  const scope = resolveScope(matchId === DEMO_MATCH_ID ? "demo" : "real");
   const [loadedRaw, weights] = await Promise.all([loadContest(bundle, scope), getActiveWeights(scope)]);
   let loaded = loadedRaw;
   let contest = loaded.contest;

@@ -38,36 +38,34 @@ export function provisionalContest(bundle: MatchBundle): ContestInput {
 }
 
 export async function loadContest(bundle: MatchBundle, scope: Scope): Promise<LoadedContest> {
-  if (bundle.isDemo) return { contest: demoContest(), origin: "demo", updatedAt: "2026-10-12T08:00:00Z", notes: [] };
-  const notes: string[] = [];
-  if (scope.kind === "owner") {
-    const sb = await readClient(scope);
-    const { data } = await sb
-      .from("contest_inputs")
-      .select("*")
-      .eq("is_demo", false)
-      .eq("owner_id", scope.userId)
-      .eq("match_id", bundle.match.id)
-      .maybeSingle();
-    if (data) {
-      return {
-        contest: {
-          matchId: data.match_id,
-          players: data.players as ContestPlayer[],
-          rules: getRules(data.rule_id),
-          rulesConfirmedAt: data.rules_confirmed_at,
-          lineupsConfirmed: data.lineups_confirmed,
-          sourceLabel: data.source_label,
-          sourceAsOf: data.source_as_of,
-        },
-        origin: "owner",
-        updatedAt: data.updated_at,
-        notes,
-      };
-    }
-    notes.push("No contest data saved yet for this match. Import credits/roles from your Dream11 contest.");
-  } else {
-    notes.push("Signed out: showing the provider squad with unknown credits. Sign in to enter your contest data.");
+  if (bundle.isDemo || scope.kind === "demo") return { contest: demoContest(), origin: "demo", updatedAt: "2026-10-12T08:00:00Z", notes: [] };
+  const { data } = await readClient()
+    .from("contest_inputs")
+    .select("*")
+    .eq("is_demo", false)
+    .is("owner_id", null)
+    .eq("match_id", bundle.match.id)
+    .maybeSingle();
+  if (data) {
+    return {
+      contest: {
+        matchId: data.match_id,
+        players: data.players as ContestPlayer[],
+        rules: getRules(data.rule_id),
+        rulesConfirmedAt: data.rules_confirmed_at,
+        lineupsConfirmed: data.lineups_confirmed,
+        sourceLabel: data.source_label,
+        sourceAsOf: data.source_as_of,
+      },
+      origin: "owner",
+      updatedAt: data.updated_at,
+      notes: [],
+    };
   }
-  return { contest: provisionalContest(bundle), origin: "provisional", updatedAt: null, notes };
+  return {
+    contest: provisionalContest(bundle),
+    origin: "provisional",
+    updatedAt: null,
+    notes: ["No contest data entered yet for this match: credits are unknown. Import credits/roles from Aryan's Dream11 contest, or explore with practice mode."],
+  };
 }

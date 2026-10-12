@@ -58,7 +58,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Stat label="Reviewed matches" value={data.overall.matches} sub={data.synthetic ? "Synthetic demo history" : "Your real matches"} />
+        <Stat label="Reviewed matches" value={data.overall.matches} sub={data.synthetic ? "Synthetic demo history" : "Aryan's real matches"} />
         <Stat label="Player results with actuals" value={data.overall.n} sub={`MAE ${data.overall.mae ?? "—"} pts`} />
         <Stat label="Bias (predicted − actual)" value={bias === null ? "—" : `${bias > 0 ? "+" : ""}${bias} pts`} sub="Positive bias = overprediction" tone={bias === null ? undefined : bias > 0 ? "over" : "under"} />
       </div>

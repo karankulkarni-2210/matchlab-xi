@@ -2,7 +2,6 @@ import Link from "next/link";
 import { BuildXI } from "@/components/build/BuildXI";
 import { templateExplanation } from "@/lib/ai/explain";
 import { buildMatch } from "@/lib/server/build";
-import { currentUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Build XI · MatchLab XI" };
@@ -10,7 +9,6 @@ export const metadata = { title: "Build XI · MatchLab XI" };
 export default async function BuildPage({ params, searchParams }: { params: Promise<{ matchId: string }>; searchParams: Promise<{ practice?: string }> }) {
   const { matchId } = await params;
   const practice = (await searchParams).practice === "1";
-  const user = await currentUser().catch(() => null);
   let result: Awaited<ReturnType<typeof buildMatch>> | null = null;
   let error: string | null = null;
   try {
@@ -18,7 +16,7 @@ export default async function BuildPage({ params, searchParams }: { params: Prom
   } catch (e) {
     error = (e as Error).message;
   }
-  if (result) return <BuildXI initial={{ ...result, template: templateExplanation(result) }} signedIn={!!user} />;
+  if (result) return <BuildXI initial={{ ...result, template: templateExplanation(result) }} />;
   {
     return (
       <div className="mx-auto max-w-2xl space-y-4 py-10">

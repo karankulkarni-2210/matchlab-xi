@@ -2,7 +2,7 @@
 
 Evidence-first Dream11 team building for a serious fantasy player (Aryan): pick a real T20 fixture, see every forecast with its source and freshness, build a rule-valid XI with an exact optimizer, get match-specific captain / vice-captain reasons from **Gemini Flash**, freeze the prediction, enter actual points after the match, and let a **human-approved learning loop** correct repeated forecasting errors.
 
-- **Live app:** https://matchlab-xi-two.vercel.app (works signed out: real fixtures + a fully labelled synthetic demo)
+- **Live app:** https://matchlab-xi-two.vercel.app (no sign-in: real fixtures, Aryan's workspace and a fully labelled synthetic demo)
 - **Repository:** https://github.com/karankulkarni-2210/matchlab-xi
 - **Components map:** [`docs/component-map.png`](docs/component-map.png) (source: [`docs/component-map.svg`](docs/component-map.svg))
 - **Test results:** [`docs/TEST_RESULTS.md`](docs/TEST_RESULTS.md)
@@ -16,17 +16,17 @@ Evidence-first Dream11 team building for a serious fantasy player (Aryan): pick 
 | **Match Desk** (`/`) | Upcoming T20 fixtures fetched live from CricketData (tracked series: West Indies tour of India 2026, Sri Lanka tour of Pakistan 2026), with source/freshness badges, provider data-quality warnings (e.g. T20Is mislabelled `odi`), and the synthetic demo. |
 | **Build XI** (`/build/[matchId]`) | Three-panel desktop layout (context · pitch · "Why this pick?") that stacks on a 390 px phone (context → pitch → pool → contest/sources) with a bottom evidence sheet and a sticky validity/action bar. Exact optimizer, swaps, C/VC edits, lock/exclude, re-validation on every change, Gemini reasons, contest CSV/form editor, Save (freeze) and Copy-XI export. |
 | **Match Review** (`/review`) | Enter actual Dream11 **base** points per selected player (blank = not entered, `0` = real zero). Errors are `predicted − actual` (positive = overprediction). MAE/bias over entered players only with N; final total hidden until all 11 are entered; predicted-vs-actual scatter omits pending players. |
-| **Learning Lab** (`/learning`) | MAE, signed bias, sample sizes by role/context; repeated-pattern detection behind a minimum-evidence gate; Gemini summary + bounded weight proposal; Accept / Keep current; version history with rollback. Synthetic demo and real data are separate tabs and never mixed. |
+| **Learning Lab** (`/learning`) | MAE, signed bias, sample sizes by role/context; repeated-pattern detection behind a minimum-evidence gate; Gemini summary + bounded weight proposal; Accept / Keep current; version history with rollback. *Demo (synthetic)* and *Aryan's matches* are separate tabs and never mixed. |
 
 ## Architecture
 
 ```
-Next.js 16 (App Router, TypeScript, Tailwind v4) on Vercel
+Next.js 16 (App Router, TypeScript, Tailwind v4) on Vercel · Supabase Postgres (RLS) · no sign-in (single-user)
 ├─ src/lib/domain/        pure, unit-tested logic (no I/O)
 │   rules.ts  validate.ts  optimizer.ts  forecast.ts  metrics.ts  learning.ts  weights.ts  scoring.ts  contestCsv.ts
 ├─ src/lib/providers/     CricketData, Open-Meteo, Cricsheet history; cache with fresh/cached/stale/missing status
 ├─ src/lib/ai/            Gemini Flash JSON calls (schema + ID validation, hash cache, 429/timeout handling)
-├─ src/lib/server/        match bundle, contest, build pipeline, teams/actuals, learning, scopes (RLS-aware clients)
+├─ src/lib/server/        match bundle, contest, build pipeline, teams/actuals, learning, scopes (read: public key · write: server only)
 ├─ src/app/api/*          route handlers (build, explain, contest, teams, actuals, learning, demo reset, health)
 └─ supabase/migrations    schema, RLS, immutability triggers, audit trail, grants
 ```
@@ -79,10 +79,12 @@ History strictly before the match date is used (no leakage). Ranking score, pred
 
 ## Security & data protection
 
-- **Supabase Auth** (email + password). **RLS** on every table: owners read and write only their rows; demo rows (`is_demo = true`, `owner_id = null`) are readable by everyone and writable only by the server's service role after explicit `is_demo` checks. Table grants are narrowed to match (no UPDATE/DELETE on frozen tables).
-- Verified in-database (see `supabase/tests/rls_checks.sql` and `docs/TEST_RESULTS.md`): another user cannot read, insert, update or delete an owner's teams/actuals/weights; anonymous visitors cannot write; frozen predictions are immutable; edits to actuals are audited.
+- **Single-user by design, with no sign-in.** MatchLab is built for one person (Aryan), so there are no accounts. Data lives in two isolated datasets: **Aryan's workspace** (`is_demo = false`, `owner_id = null`) and the **synthetic demo** (`is_demo = true`).
+- **The database is read-only to the public key.** RLS allows SELECT on workspace and demo rows, and all INSERT/UPDATE/DELETE privileges are revoked from `anon`/`authenticated`. Every write goes through the Next.js server routes, which validate input (zod, rules, ownership of IDs, value ranges) and then use the service role. Frozen predictions are immutable via triggers, even for the service role, and edits to actuals are audited (`actuals_audit`).
+- Verified in-database (`supabase/tests/workspace_checks.sql`, results in `docs/TEST_RESULTS.md`): the public key, or any JWT, can read but cannot insert, update or delete teams, actuals, contest data or weights; the server can write; frozen predictions cannot be changed.
 - Secrets (`GEMINI_API_KEY`, `CRICKETDATA_API_KEY`, `SUPABASE_SECRET_KEY`) are read only in `server-only` modules and never sent to the browser or logs. `/api/health` reports names and booleans only.
 - Fetched pages, squads, CSV rows and notes are treated as **data**. Prompts tell Gemini to ignore instructions inside evidence, and outputs are validated.
+- **Trade-off (accepted):** with no login, anyone who has the URL can save teams, enter actual points and accept/reject weight versions in Aryan's workspace through the UI. Server validation still applies and saved predictions can never be edited. If the URL is shared beyond Aryan, add an owner passcode or Supabase Auth (the schema still supports `owner_id`).
 
 ## Setup
 
@@ -95,7 +97,7 @@ npm run dev                  # http://localhost:3000
 | Variable | Where | Notes |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | browser + server | or legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| `SUPABASE_SECRET_KEY` | server only | or legacy `SUPABASE_SERVICE_ROLE_KEY`. Used for provider/AI caches, the demo sandbox and demo reset. Without it the app still works (demo read-only, memory + data cache) |
+| `SUPABASE_SECRET_KEY` | server only | or legacy `SUPABASE_SERVICE_ROLE_KEY`. **Required for saving anything** (teams, actuals, contest data, weight decisions, demo reset) and for the DB caches. Without it the app is read-only |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | server only | any Gemini **Flash** model id |
 | `CRICKETDATA_API_KEY` | server only | free plan |
 
@@ -111,12 +113,12 @@ Open any real fixture and choose **Try practice mode (illustrative credits)**, o
 
 Practice teams are labelled everywhere ("Practice credits", "illustrative credits", "· practice credits" on saved teams), always carry the `ILLUSTRATIVE_CREDITS` readiness blocker, and can never be marked **Ready**. The contest editor refuses to save practice credits as contest data. Example (12 Oct 2026, India vs West Indies 4th T20I): an exact search over ~267k nodes returned a 100-credit XI with C Shamar Joseph and VC Shreyas Iyer, status *Valid · provisional*.
 
-## Using it for a real match (owner)
+## Using it for a real match (Aryan)
 
-1. Sign in, open the fixture on Match Desk → **Build XI**.
+1. Open the fixture on Match Desk → **Build XI**.
 2. **Edit contest data / CSV**: download the template (pre-filled with the provider squad), fill credits/roles/lineups from your Dream11 contest, validate and save. Tick the rule confirmation and the "XI announced" boxes only once they are true.
 3. Re-optimize, review reasons (Generate reasons), adjust C/VC or swap, then **Save XI** (frozen).
-4. After the match, enter base points in **Match Review**. Once there are enough matches, use **Learning Lab → My real matches**.
+4. After the match, enter base points in **Match Review**. Once there are enough matches, use **Learning Lab → Aryan's matches**.
 
 ## Known limitations (honest)
 
@@ -125,7 +127,7 @@ Practice teams are labelled everywhere ("Practice credits", "illustrative credit
 - **CricketData `match_squad`** returns the whole tour squad (ODI + T20I, 28 India players) and costs 10 hits on the free plan. Some players have no role (shown as unknown). Lineups are not available pre-toss.
 - **History coverage:** Cricsheet data currently ends 2026-10-06, so the 2nd/3rd T20Is of the current India–West Indies series are not in the evidence yet. Only men's T20Is are loaded (no IPL or women's matches). Some venues have tiny samples (Hyderabad: 2 T20Is), and the venue index shrinks heavily toward neutral. Names are matched by exact/alias/initials within team; ambiguous matches are left unmatched (coverage 0) rather than guessed, and you can set `history_name` in the CSV.
 - **Forecasts are approximate.** Historical points use an approximation of Dream11 scoring, and uncertainty is a spread, not a calibrated interval. No accuracy claims are made. The demo learning history is **synthetic** and excluded from real metrics, and one real match never establishes improvement.
-- **Demo sandbox writes** (saving demo teams, entering demo actuals, proposals, reset) need `SUPABASE_SECRET_KEY` on the server.
+- **All saving** (workspace and demo) needs `SUPABASE_SECRET_KEY` on the server; without it the deployed app is read-only.
 - Free-tier limits apply: CricketData 100 hits/day, Gemini free-tier rate limits, and Open-Meteo for non-commercial use.
 
 ## Attribution

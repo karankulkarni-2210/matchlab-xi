@@ -7,7 +7,7 @@ import type { ContestPlayer } from "@/lib/domain/types";
 import { cx, Pill } from "@/components/ui";
 import type { BuildResult } from "./types";
 
-export function ContestEditor({ data, signedIn, onClose, onSaved }: { data: BuildResult; signedIn: boolean; onClose: () => void; onSaved: () => void }) {
+export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; onClose: () => void; onSaved: () => void }) {
   const c = data.contest.contest;
   const [teamA, teamB] = data.bundle.match.teams;
   const [players, setPlayers] = useState<ContestPlayer[]>(c.players);
@@ -24,7 +24,7 @@ export function ContestEditor({ data, signedIn, onClose, onSaved }: { data: Buil
   const [msg, setMsg] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const isPractice = data.contest.origin === "practice";
-  const readOnly = data.bundle.isDemo || !signedIn || isPractice;
+  const readOnly = data.bundle.isDemo || isPractice;
   const known = useMemo(() => players.filter((p) => p.credits !== null).length, [players]);
 
   const update = (key: string, patch: Partial<ContestPlayer>) => setPlayers((ps) => ps.map((p) => (p.key === key ? { ...p, ...patch } : p)));
@@ -86,7 +86,7 @@ export function ContestEditor({ data, signedIn, onClose, onSaved }: { data: Buil
               Contest data · {data.bundle.match.teamShort[0]} vs {data.bundle.match.teamShort[1]}
             </h2>
             <p className="text-sm text-muted">
-              Credits, contest roles and lineups come from <b>your</b> Dream11 contest. MatchLab never guesses them. {known}/{players.length} credits known.
+              Credits, contest roles and lineups come from Aryan&apos;s Dream11 contest. MatchLab never guesses them. {known}/{players.length} credits known.
             </p>
           </div>
           <button onClick={onClose} className="focus-ring rounded-md p-1 text-muted hover:text-warm" aria-label="Close">
@@ -100,7 +100,7 @@ export function ContestEditor({ data, signedIn, onClose, onSaved }: { data: Buil
                 ? "The demo contest is fixed (synthetic). Pick a real match to enter your own contest data."
                 : isPractice
                   ? "Practice credits are illustrative and cannot be saved as contest data. Exit practice mode to enter your real Dream11 credits."
-                  : "Sign in to save contest data. You can still preview a CSV here."}
+                  : ""}
             </div>
           )}
           <section className="grid gap-3 sm:grid-cols-2">

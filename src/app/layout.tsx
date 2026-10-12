@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar } from "@/components/Sidebar";
-import { currentUser } from "@/lib/supabase/server";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -13,13 +12,12 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { themeColor: "#0B1110", width: "device-width", initialScale: 1 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const user = await currentUser().catch(() => null);
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-ink text-warm">
         <div className="flex min-h-dvh flex-col lg:flex-row">
-          <Sidebar email={user?.email ?? null} />
+          <Sidebar />
           <main className="min-w-0 flex-1 px-4 pb-28 pt-5 lg:px-7 lg:pb-10 lg:pt-6">{children}</main>
         </div>
       </body>

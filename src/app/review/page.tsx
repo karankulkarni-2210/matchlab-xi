@@ -10,7 +10,8 @@ export const metadata = { title: "Match Review · MatchLab XI" };
 
 export default async function ReviewPage({ searchParams }: { searchParams: Promise<{ team?: string }> }) {
   const sp = await searchParams;
-  const [demoScope, realScope] = await Promise.all([resolveScope("demo"), resolveScope("real")]);
+  const demoScope = resolveScope("demo");
+  const realScope = resolveScope("real");
   const [demoTeams, myTeams] = await Promise.all([listTeams(demoScope).catch(() => []), listTeams(realScope).catch(() => [])]);
   const all = [...myTeams, ...demoTeams];
   const teamId = sp.team ?? myTeams[0]?.id ?? demoTeams.find((t) => t.entered < 11)?.id ?? demoTeams[0]?.id;
@@ -28,7 +29,6 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
           current={teamId ?? null}
           mine={myTeams.map((t) => ({ id: t.id, label: t.match_label, entered: t.entered, start: t.match_start }))}
           demo={demoTeams.map((t) => ({ id: t.id, label: t.match_label, entered: t.entered, start: t.match_start }))}
-          signedIn={realScope.kind === "owner"}
         />
       </header>
 
@@ -36,11 +36,11 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         <div className="panel space-y-2 p-6 text-sm text-muted">
           <p>No saved teams yet.</p>
           <p>
-            Build and save an XI first — try the <Link className="text-lime underline" href="/build/demo-hh-dd">demo match</Link>. If the demo history is empty, an administrator needs to seed it (Learning Lab → reset demo).
+            Build and save an XI first — try the <Link className="text-lime underline" href="/build/demo-hh-dd">demo match</Link>.
           </p>
         </div>
       )}
-      {teamId && !loaded && <p className="panel p-6 text-sm text-bad">That team was not found or is not yours.</p>}
+      {teamId && !loaded && <p className="panel p-6 text-sm text-bad">That team was not found.</p>}
       {loaded && (
         <>
           <div className="flex flex-wrap items-center gap-2 text-sm">

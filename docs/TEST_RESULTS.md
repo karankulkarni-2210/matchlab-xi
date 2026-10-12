@@ -61,7 +61,21 @@ What they cover (mapped to the brief): valid / invalid / impossible XI · credit
       Tests  50 passed (50)
 ```
 
-## 2. Database security & immutability (run against the live Supabase project via SQL; both scripts roll back)
+## 2. Database security & immutability (run against the live Supabase project via SQL; all scripts roll back)
+
+**Current model: single-user workspace with no sign-in** (`supabase/tests/workspace_checks.sql`):
+
+```
+server write workspace team+actual(0): ok
+anon reads workspace team: 1      insert actual blocked: true   update actual blocked: true
+                                  delete team blocked: true     insert contest blocked: true   update weights blocked: true
+authed reads workspace team: 1    insert actual blocked: true   update actual blocked: true
+                                  delete team blocked: true     insert contest blocked: true   update weights blocked: true
+server edit frozen prediction blocked: true
+actual still: 0
+```
+
+Earlier owner-account model (before sign-in was removed at the owner's request), kept for reference:
 
 `supabase/tests/rls_checks.sql` — two throwaway users A (owner) and B (attacker) plus the anon role:
 

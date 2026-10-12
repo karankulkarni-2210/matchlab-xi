@@ -1,8 +1,7 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, BookOpen, House, LogIn, LogOut, Users } from "lucide-react";
-import { supabaseBrowser } from "@/lib/supabase/browser";
+import { usePathname } from "next/navigation";
+import { BarChart3, BookOpen, House, Users } from "lucide-react";
 import { cx } from "./ui";
 
 const NAV = [
@@ -27,14 +26,8 @@ export function Logo() {
   );
 }
 
-export function Sidebar({ email }: { email: string | null }) {
+export function Sidebar() {
   const path = usePathname();
-  const router = useRouter();
-  const signOut = async () => {
-    await supabaseBrowser().auth.signOut();
-    router.replace("/");
-    router.refresh();
-  };
   return (
     <>
       {/* desktop */}
@@ -62,23 +55,8 @@ export function Sidebar({ email }: { email: string | null }) {
         </nav>
         <div className="mt-auto space-y-3 text-xs">
           <div className="rounded-lg border border-line p-3 text-muted">
-            {email ? (
-              <>
-                <div className="truncate text-warm" title={email}>
-                  {email}
-                </div>
-                <button onClick={signOut} className="focus-ring mt-2 inline-flex items-center gap-1.5 text-muted hover:text-warm">
-                  <LogOut size={14} /> Sign out
-                </button>
-              </>
-            ) : (
-              <>
-                <div>Exploring signed out — demo data is open to everyone.</div>
-                <Link href="/login" className="focus-ring mt-2 inline-flex items-center gap-1.5 font-medium text-lime">
-                  <LogIn size={14} /> Sign in to save your picks
-                </Link>
-              </>
-            )}
+            <div className="font-medium text-warm">Aryan&apos;s workspace</div>
+            <div className="mt-1">Single-user app — no sign-in. The demo match is synthetic and kept separate.</div>
           </div>
           <div className="text-faint">Gemini Flash · CricketData · Cricsheet · Open-Meteo</div>
         </div>
@@ -86,15 +64,7 @@ export function Sidebar({ email }: { email: string | null }) {
       {/* mobile top bar + bottom nav */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-ink/95 px-4 py-3 backdrop-blur lg:hidden">
         <Logo />
-        {email ? (
-          <button onClick={signOut} className="focus-ring text-xs text-muted">
-            Sign out
-          </button>
-        ) : (
-          <Link href="/login" className="focus-ring text-xs font-medium text-lime">
-            Sign in
-          </Link>
-        )}
+        <span className="text-xs text-muted">Aryan&apos;s workspace</span>
       </div>
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line bg-ink-2/95 backdrop-blur lg:hidden">
         {NAV.map((n) => {

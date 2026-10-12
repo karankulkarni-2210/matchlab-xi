@@ -8,11 +8,10 @@ import { HttpError } from "./teams";
 import { getActiveWeights, readClient, resolveScope, scopeFilter, writeClient, type Scope } from "./scope";
 
 export async function loadRecords(scope: Scope): Promise<{ records: LearningRecord[]; perMatch: { matchId: string; label: string; start: string | null; predicted: number; actual: number; n: number }[] }> {
-  if (scope.kind === "guest") return { records: [], perMatch: [] };
-  const sb = await readClient(scope);
+  const sb = readClient();
   const f = scopeFilter(scope);
   let tq = sb.from("teams").select("id, match_id, match_label, match_start, weights_snapshot, is_synthetic").eq("is_demo", f.is_demo);
-  if (scope.kind === "owner") tq = tq.eq("owner_id", scope.userId);
+  tq = tq.is("owner_id", null);
   const { data: teams } = await tq;
   if (!teams?.length) return { records: [], perMatch: [] };
   const ids = teams.map((t) => t.id);
@@ -56,7 +55,7 @@ export async function loadRecords(scope: Scope): Promise<{ records: LearningReco
 }
 
 export async function learningOverview(dataset: "demo" | "real") {
-  const scope = await resolveScope(dataset);
+  const scope = resolveScope(dataset);
   const { records, perMatch } = await loadRecords(scope);
   const active = await getActiveWeights(scope);
   const overall = errorStats(records.map((r) => ({ matchId: r.matchId, predicted: r.predicted, actual: r.actual })));
@@ -65,15 +64,13 @@ export async function learningOverview(dataset: "demo" | "real") {
   const gate = gateStatus(records);
   let versions: Record<string, unknown>[] = [];
   let decisions: Record<string, unknown>[] = [];
-  if (scope.kind !== "guest") {
-    const sb = await readClient(scope);
+  {
+    const sb = readClient();
     const f = scopeFilter(scope);
     let vq = sb.from("weight_versions").select("id, version, weights, role_multipliers, status, origin, rationale, ai, backtest, evidence, created_at, decided_at, parent_id").eq("is_demo", f.is_demo);
     let dq = sb.from("weight_decisions").select("id, decision, version_id, previous_active_id, note, created_at").eq("is_demo", f.is_demo);
-    if (scope.kind === "owner") {
-      vq = vq.eq("owner_id", scope.userId);
-      dq = dq.eq("owner_id", scope.userId);
-    }
+    vq = vq.is("owner_id", null);
+    dq = dq.is("owner_id", null);
     versions = (await vq.order("version", { ascending: false })).data ?? [];
     decisions = (await dq.order("created_at", { ascending: false }).limit(20)).data ?? [];
   }
@@ -127,8 +124,8 @@ const proposalJsonSchema = {
 
 /** Detect → gate → deterministic bounded candidate → Gemini summary/proposal (validated) → stored as 'proposed'. */
 export async function proposeAdjustment(dataset: "demo" | "real") {
-  const scope = await resolveScope(dataset);
-  const wc = await writeClient(scope);
+  const scope = resolveScope(dataset);
+  const wc = writeClient();
   if ("error" in wc) throw new HttpError(wc.status, wc.error);
   const { records } = await loadRecords(scope);
   const gate = gateStatus(records);
@@ -186,10 +183,10 @@ export async function proposeAdjustment(dataset: "demo" | "real") {
   const f = scopeFilter(scope);
   // supersede older pending proposals
   let up = sb.from("weight_versions").update({ status: "rejected", decided_at: new Date().toISOString() }).eq("status", "proposed").eq("is_demo", f.is_demo);
-  if (scope.kind === "owner") up = up.eq("owner_id", scope.userId);
+  up = up.is("owner_id", null);
   await up;
   let mq = sb.from("weight_versions").select("version").eq("is_demo", f.is_demo);
-  if (scope.kind === "owner") mq = mq.eq("owner_id", scope.userId);
+  mq = mq.is("owner_id", null);
   const { data: maxRow } = await mq.order("version", { ascending: false }).limit(1).maybeSingle();
   const { data: created, error } = await sb
     .from("weight_versions")
@@ -233,13 +230,13 @@ export const DecideSchema = z.object({
 
 /** Human decision. Accept/rollback switch the active version for FUTURE builds only; frozen teams keep theirs. */
 export async function decide(input: z.infer<typeof DecideSchema>) {
-  const scope = await resolveScope(input.dataset);
-  const wc = await writeClient(scope);
+  const scope = resolveScope(input.dataset);
+  const wc = writeClient();
   if ("error" in wc) throw new HttpError(wc.status, wc.error);
   const sb = wc.client;
   const f = scopeFilter(scope);
   let vq = sb.from("weight_versions").select("id, status, version").eq("id", input.versionId).eq("is_demo", f.is_demo);
-  if (scope.kind === "owner") vq = vq.eq("owner_id", scope.userId);
+  vq = vq.is("owner_id", null);
   const { data: target } = await vq.maybeSingle();
   if (!target) throw new HttpError(404, "Weight version not found in this dataset.");
   const active = await getActiveWeights(scope);

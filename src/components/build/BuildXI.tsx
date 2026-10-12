@@ -19,7 +19,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return j as T;
 }
 
-export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn: boolean }) {
+export function BuildXI({ initial }: { initial: BuildResult }) {
   const [data, setData] = useState(initial);
   const [selectedKey, setSelectedKey] = useState<string | null>(initial.team?.captainKey ?? null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -258,7 +258,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
                 </Link>
               )}
               <button onClick={() => setEditor(true)} className="focus-ring inline-flex items-center gap-1 rounded-md border border-warn/40 px-3 py-1 font-medium">
-                <FileSpreadsheet size={14} /> {signedIn ? "Enter contest data" : "Preview contest import"}
+                <FileSpreadsheet size={14} /> Enter contest data
               </button>
             </div>
           </div>
@@ -512,7 +512,6 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
             <button
               disabled={!v?.valid || !!busy}
               onClick={save}
-              title={!signedIn && !data.bundle.isDemo ? "Sign in to save" : undefined}
               className="focus-ring inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-lime px-4 py-2 text-sm font-semibold text-ink hover:bg-lime-2 disabled:opacity-40 sm:flex-none sm:px-5 sm:py-2.5"
             >
               <Save size={16} /> {busy === "save" ? "Saving…" : "Save XI"}
@@ -524,7 +523,6 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
       {editor && (
         <ContestEditor
           data={data}
-          signedIn={signedIn}
           onClose={() => setEditor(false)}
           onSaved={async () => {
             setEditor(false);

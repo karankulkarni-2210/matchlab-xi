@@ -37,10 +37,10 @@ export async function saveTeam(input: z.infer<typeof SaveTeamSchema>) {
     practice: input.practice,
   });
   if (!b.validation?.valid) throw new HttpError(422, "Team is not valid; nothing was saved.", b.validation?.violations);
-  const scope: Scope = await resolveScope(input.matchId === DEMO_MATCH_ID ? "demo" : "real");
-  const wc = await writeClient(scope);
+  const scope: Scope = resolveScope(input.matchId === DEMO_MATCH_ID ? "demo" : "real");
+  const wc = writeClient();
   if ("error" in wc) throw new HttpError(wc.status, wc.error);
-  if (!b.weights.id) throw new HttpError(503, "No stored weight version for this scope (seed or sign-in required).");
+  if (!b.weights.id) throw new HttpError(503, "No stored weight version for this dataset yet (seed the demo or enable saving).");
   const rules = b.contest.contest.rules;
   const f = scopeFilter(scope);
   const explanation = input.explanation ? (input.explanation as Explanation) : null;
@@ -111,18 +111,18 @@ export interface TeamListItem {
 }
 
 export async function listTeams(scope: Scope): Promise<TeamListItem[]> {
-  if (scope.kind === "guest") return [];
-  const sb = await readClient(scope);
-  const f = scopeFilter(scope);
-  let q = sb.from("teams").select("id, match_label, match_start, status, predicted_total, is_demo, is_synthetic, created_at, weight_version, actuals(count)").eq("is_demo", f.is_demo);
-  if (scope.kind === "owner") q = q.eq("owner_id", scope.userId);
-  const { data } = await q.order("match_start", { ascending: false }).limit(50);
+  const { data } = await readClient()
+    .from("teams")
+    .select("id, match_label, match_start, status, predicted_total, is_demo, is_synthetic, created_at, weight_version, actuals(count)")
+    .eq("is_demo", scope.kind === "demo")
+    .is("owner_id", null)
+    .order("match_start", { ascending: false })
+    .limit(50);
   return (data ?? []).map((t) => ({ ...(t as unknown as TeamListItem), entered: (t as unknown as { actuals: { count: number }[] }).actuals?.[0]?.count ?? 0 }));
 }
 
 export async function loadTeam(teamId: string) {
-  const user = await resolveScope("real");
-  const sb = await readClient(user);
+  const sb = readClient();
   const { data: team } = await sb.from("teams").select("*").eq("id", teamId).maybeSingle();
   if (!team) return null;
   const { data: players } = await sb.from("team_players").select("*").eq("team_id", teamId);
@@ -144,7 +144,7 @@ export async function loadTeam(teamId: string) {
   }));
   rows.sort((a, b) => b.multiplier - a.multiplier || b.predictedBase - a.predictedBase);
   const metrics = computeTeamMetrics(rows as ResultRow[]);
-  const canEdit = team.is_demo ? true : user.kind === "owner" && team.owner_id === user.userId;
+  const canEdit = team.owner_id === null; // single-user app: Aryan's workspace and the demo are editable through the server
   return { team, rows, metrics, canEdit };
 }
 
@@ -154,13 +154,11 @@ export const ActualsSchema = z.object({
 
 /** Saves actuals separately from predictions. Blank deletes a stored actual; "0" stores a real zero. */
 export async function saveActuals(teamId: string, input: z.infer<typeof ActualsSchema>) {
-  const pub = await readClient(await resolveScope("real"));
+  const pub = readClient();
   const { data: team } = await pub.from("teams").select("id, is_demo, owner_id").eq("id", teamId).maybeSingle();
-  if (!team) throw new HttpError(404, "Team not found or not yours.");
-  const scope: Scope = team.is_demo ? await resolveScope("demo") : await resolveScope("real");
-  if (!team.is_demo && (scope.kind !== "owner" || scope.userId !== team.owner_id))
-    throw new HttpError(403, "Only the owner can enter actual points for this team.");
-  const wc = await writeClient(scope);
+  if (!team || team.owner_id !== null) throw new HttpError(404, "Team not found.");
+  const scope: Scope = resolveScope(team.is_demo ? "demo" : "real");
+  const wc = writeClient();
   if ("error" in wc) throw new HttpError(wc.status, wc.error);
   const { data: tps } = await pub.from("team_players").select("id").eq("team_id", teamId);
   const valid = new Set((tps ?? []).map((t) => t.id));
@@ -183,9 +181,7 @@ export async function saveActuals(teamId: string, input: z.infer<typeof ActualsS
     if (error) throw new HttpError(500, `Saving actuals failed: ${error.message}`);
   }
   if (deletes.length) {
-    let q = wc.client.from("actuals").delete().in("team_player_id", deletes).eq("team_id", teamId);
-    q = team.is_demo ? q.eq("is_demo", true) : q;
-    const { error } = await q;
+    const { error } = await wc.client.from("actuals").delete().in("team_player_id", deletes).eq("team_id", teamId).eq("is_demo", team.is_demo).is("owner_id", null);
     if (error) throw new HttpError(500, `Clearing actuals failed: ${error.message}`);
   }
   return { saved: upserts.length, cleared: deletes.length };
