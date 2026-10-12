@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
+/* MatchLab XI tokens: dark ink, emerald pitch, lime accent, warm white text */
+@theme {
+  --color-ink: #0b1110;
+  --color-ink-2: #101816;
+  --color-panel: #121c19;
+  --color-panel-2: #16231f;
+  --color-line: #22322d;
+  --color-line-2: #2c403a;
+  --color-pitch: #123d2b;
+  --color-pitch-2: #17492f;
+  --color-lime: #c8f36a;
+  --color-lime-2: #b3df52;
+  --color-warm: #f6f7f2;
+  --color-muted: #9fb0a8;
+  --color-faint: #6c7d76;
+  --color-over: #f0a35e; /* overprediction (neutral warm) */
+  --color-under: #7cc4f2; /* underprediction (neutral cool) */
+  --color-bad: #f2766b;
+  --color-warn: #f2c94c;
+  --color-ok: #8fdc7a;
+  --color-wk: #7cc4f2;
+  --color-bat: #c8f36a;
+  --color-ar: #c9a7ff;
+  --color-bowl: #f2c94c;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-warm);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+}
+
+.pitch-bg {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(200, 243, 106, 0.06), transparent 60%),
+    repeating-linear-gradient(90deg, #123d2b 0 56px, #154431 56px 112px);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+/* thin scrollbars inside panels */
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 8px;
 }

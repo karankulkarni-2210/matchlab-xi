@@ -251,6 +251,7 @@ export function diagnoseInfeasible(
       message: `Only ${cands.length} eligible players; ${rules.players} needed.${suffix}`,
       players: unknownCredits.map((e) => e.key),
     });
+    return v; // the pool itself is too small; per-role/team messages would only repeat this
   }
   for (const r of ROLES) {
     const avail = cands.filter((c) => c.role === r).length;
