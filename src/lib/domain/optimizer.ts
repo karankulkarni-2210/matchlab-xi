@@ -248,7 +248,7 @@ export function diagnoseInfeasible(
   if (cands.length < rules.players) {
     v.push({
       code: "NO_FEASIBLE_TEAM",
-      message: `Only ${cands.length} eligible players; ${rules.players} needed.${suffix}`,
+      message: `Only ${cands.length} eligible players; ${rules.players} needed.${suffix}${cands.length === 0 && !exclusions.length ? " No player pool yet — the provider has not published squads for this fixture." : ""}`,
       players: unknownCredits.map((e) => e.key),
     });
     return v; // the pool itself is too small; per-role/team messages would only repeat this

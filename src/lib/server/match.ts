@@ -121,9 +121,15 @@ export async function getMatchBundle(matchId: string): Promise<MatchBundle> {
   try {
     const sq = await getMatchSquad(matchId);
     squadTeams = sq.data;
-    const sizes = sq.data.map((t) => `${t.teamName} ${t.players.length}`).join(", ");
-    squadNote = `Provider squad lists the whole tour (${sizes}); it is not the match XI. Confirm your contest pool.`;
-    sources.push(badge("squad", "Squads", sq, CD_SOURCE_URL, sizes));
+    const total = sq.data.reduce((n, t) => n + t.players.length, 0);
+    if (total === 0) {
+      squadNote = "CricketData has not published a squad for this fixture yet, so there is no player pool. Add players with the contest CSV, or check back once squads are announced.";
+      sources.push({ id: "squad", label: "Squads", provider: "CricketData match_squad", url: CD_SOURCE_URL, asOf: sq.fetchedAt, status: "missing", detail: "No squad published yet" });
+    } else {
+      const sizes = sq.data.map((t) => `${t.teamName} ${t.players.length}`).join(", ");
+      squadNote = `Provider squad lists the whole tour (${sizes}); it is not the match XI. Confirm your contest pool.`;
+      sources.push(badge("squad", "Squads", sq, CD_SOURCE_URL, sizes));
+    }
   } catch (e) {
     squadNote = `Squad unavailable: ${(e as Error).message}`;
     sources.push({ id: "squad", label: "Squads", provider: "CricketData match_squad", url: CD_SOURCE_URL, asOf: null, status: "missing", detail: squadNote });
