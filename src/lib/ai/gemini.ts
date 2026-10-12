@@ -99,7 +99,9 @@ export async function geminiJson<T>(opts: {
           responseMimeType: "application/json",
           responseJsonSchema: opts.responseSchema,
           temperature: 0.3,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
+          // Gemini 3.x Flash: low thinking keeps latency down for grounded summarisation
+          ...(/gemini-3/i.test(model) ? { thinkingConfig: { thinkingLevel: "low" } } : {}),
         },
       }),
       cache: "no-store",

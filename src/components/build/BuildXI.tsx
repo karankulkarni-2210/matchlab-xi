@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, CircleAlert, CloudRain, Coins, Database, FileSpreadsheet, MapPin, RefreshCw, Save, ShieldCheck, Sparkles, TriangleAlert, Users, X } from "lucide-react";
+import { CheckCircle2, CircleAlert, ClipboardCopy, CloudRain, Coins, Database, FileSpreadsheet, MapPin, RefreshCw, Save, ShieldCheck, Sparkles, TriangleAlert, Users, X } from "lucide-react";
 import { ago, cx, FreshnessPill, Pill, RoleChip } from "@/components/ui";
 import type { TeamSelection } from "@/lib/domain/types";
 import { ContestEditor } from "./ContestEditor";
@@ -117,6 +117,32 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
       setNotice({ tone: "bad", text: `Save failed: ${(e as Error).message}` });
     } finally {
       setBusy(null);
+    }
+  };
+
+  const copyXi = async () => {
+    if (!data.team) return;
+    const t = data.team;
+    const byRole = (r: string) =>
+      xi
+        .filter((p) => p.role === r)
+        .map((p) => `${p.name}${p.key === t.captainKey ? " (C)" : p.key === t.viceCaptainKey ? " (VC)" : ""} ${p.credits ?? "?"}cr`)
+        .join(", ");
+    const text = [
+      `MatchLab XI — ${m.teamShort[0]} vs ${m.teamShort[1]} · ${m.title}${data.bundle.isDemo ? " (SYNTHETIC DEMO)" : ""}`,
+      `Status: ${v?.status === "ready" ? "Ready" : v?.status === "valid_provisional" ? "Valid, provisional" : "Invalid"} · ${data.totals.credits ?? "?"}/${rules.creditCap} credits · ${rules.label}`,
+      `C: ${fById.get(t.captainKey ?? "")?.name ?? "-"} · VC: ${fById.get(t.viceCaptainKey ?? "")?.name ?? "-"}`,
+      `WK: ${byRole("WK")}`,
+      `BAT: ${byRole("BAT")}`,
+      `AR: ${byRole("AR")}`,
+      `BOWL: ${byRole("BOWL")}`,
+      `Projected ${data.totals.predicted} pts (forecast ${data.forecastVersion}, weights v${data.weights.version}). Enter the team manually in Dream11.`,
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setNotice({ tone: "ok", text: "Team copied — paste it in your league chat or use it to enter the team in Dream11." });
+    } catch {
+      setNotice({ tone: "warn", text: "Clipboard unavailable in this browser." });
     }
   };
 
@@ -430,6 +456,15 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
             )}
           </div>
           <div className="flex shrink-0 gap-2">
+            <button
+              disabled={!data.team || !!busy}
+              onClick={copyXi}
+              aria-label="Copy team as text"
+              title="Copy team as text"
+              className="focus-ring inline-flex items-center justify-center rounded-lg border border-line-2 px-3 py-2.5 text-sm hover:border-lime/60 disabled:opacity-40"
+            >
+              <ClipboardCopy size={16} />
+            </button>
             <button
               disabled={!v?.valid || !!busy}
               onClick={() => generate(explain?.status === "fresh" || explain?.status === "cached")}
