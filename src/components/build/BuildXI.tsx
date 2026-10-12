@@ -328,6 +328,7 @@ export function BuildXI({ initial, signedIn }: { initial: BuildResult; signedIn:
                               <span className="block text-[11px] text-faint">
                                 {f.team} · {f.lineup.replace("_", " ")}
                                 {!f.historyMatched ? " · no history" : ""}
+                                {f.staleHistory && <span className="text-warn"> · last T20I {f.lastT20I?.slice(0, 7)}</span>}
                               </span>
                             </button>
                           </td>

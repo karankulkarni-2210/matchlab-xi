@@ -68,6 +68,8 @@ export function explanationEvidence(b: BuildResult) {
       coveragePct: Math.round(f.coverage * 100),
       factors: Object.fromEntries(Object.entries(f.factors).map(([k2, v]) => [k2, { estimate: v.estimate, sampleN: v.n, note: v.note }])),
       historyMatch: f.historyMatched ? f.matchMethod : "none",
+      lastT20IInData: f.lastT20I,
+      staleHistoryWarning: f.staleHistory,
       evidenceIds: f.evidenceIds,
     };
   };

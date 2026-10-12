@@ -5,6 +5,7 @@ import { envStatus } from "@/lib/env";
 import { learningOverview } from "@/lib/server/learning";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Learning Lab · MatchLab XI" };
 
 export default async function LearningPage({ searchParams }: { searchParams: Promise<{ ds?: string }> }) {
   const sp = await searchParams;

@@ -5,6 +5,7 @@ import { buildMatch } from "@/lib/server/build";
 import { currentUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Build XI · MatchLab XI" };
 
 export default async function BuildPage({ params }: { params: Promise<{ matchId: string }> }) {
   const { matchId } = await params;

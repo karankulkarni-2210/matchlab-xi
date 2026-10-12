@@ -6,6 +6,7 @@ import { listMatches, splitFixtures, type SourceBadge } from "@/lib/server/match
 import type { MatchSummary } from "@/lib/providers/cricketdata";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Match Desk · MatchLab XI" };
 
 function MatchCard({ m, demo = false }: { m: MatchSummary; demo?: boolean }) {
   const upcoming = !m.started;

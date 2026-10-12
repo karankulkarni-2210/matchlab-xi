@@ -25,7 +25,7 @@ export interface BuildResult {
   contest: LoadedContest;
   weights: ActiveWeights;
   forecastVersion: string;
-  forecasts: (PlayerForecast & { matchMethod: string; historyName: string | null; lastT20I: string | null })[];
+  forecasts: (PlayerForecast & { matchMethod: string; historyName: string | null; lastT20I: string | null; staleHistory: boolean })[];
   team: TeamSelection | null;
   optimizer: { feasible: boolean; optimal: boolean; objective: number | null; nodes: number; violations: Violation[]; exclusions: Exclusion[] } | null;
   validation: TeamValidation | null;
@@ -68,7 +68,10 @@ export async function buildMatch(
       historyName = m.historyName;
       lastT20I = m.lastDate;
     }
-    return { ...forecastPlayer(p, history, ctx), matchMethod: method, historyName, lastT20I };
+    const daysSinceLast = lastT20I ? Math.round((Date.parse(bundle.match.startsAt) - Date.parse(lastT20I)) / 86400000) : null;
+    // Evidence-quality flag only: a long gap since the last T20I is shown, never used to guess the XI.
+    const staleHistory = daysSinceLast !== null && daysSinceLast > 270;
+    return { ...forecastPlayer(p, history, ctx), matchMethod: method, historyName, lastT20I, staleHistory };
   });
   const fMap = new Map(forecasts.map((f) => [f.key, f]));
 
@@ -181,7 +184,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
       id: `hist:${f.key}`,
       kind: "history",
       title: `${f.name}: ${f.historySample} recent T20I(s)`,
-      detail: `${f.factors.form.note}. ${f.factors.opportunity.note}. ${f.factors.venue.note}.${f.historyMatched ? ` Matched as "${f.historyName}" (${f.matchMethod}).` : " No history match — forecast is the role prior."}`,
+      detail: `${f.factors.form.note}. ${f.factors.opportunity.note}. ${f.factors.venue.note}.${f.historyMatched ? ` Matched as "${f.historyName}" (${f.matchMethod}).` : " No history match — forecast is the role prior."}${f.staleHistory ? ` Last T20I in the data was ${f.lastT20I}: recent selection unknown — confirm they are in your contest pool.` : ""}`,
       source: histSrc,
       asOf: f.lastT20I,
     });

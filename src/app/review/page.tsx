@@ -6,6 +6,7 @@ import { listTeams, loadTeam } from "@/lib/server/teams";
 import { resolveScope } from "@/lib/server/scope";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Match Review · MatchLab XI" };
 
 export default async function ReviewPage({ searchParams }: { searchParams: Promise<{ team?: string }> }) {
   const sp = await searchParams;
