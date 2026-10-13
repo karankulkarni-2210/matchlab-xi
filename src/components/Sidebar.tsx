@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BarChart3, BookOpen, House, Users } from "lucide-react";
@@ -51,6 +52,9 @@ export function Sidebar() {
           })}
         </nav>
         <div className="mt-auto space-y-3 text-xs">
+          <div className="rounded-2xl bg-[var(--logo-panel)] p-2">
+            <Image src="/cricket-logo.png" alt="Cricket illustration with helmet, bat, ball and stumps" width={736} height={736} sizes="200px" className="h-auto w-full rounded-xl" />
+          </div>
           <div className="rounded-2xl border border-line p-3 text-muted">
             <div className="font-medium text-cream">Aryan&apos;s workspace</div>
             <div className="mt-1">Single-user app — no sign-in. The demo match is synthetic and kept separate.</div>

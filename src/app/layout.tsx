@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Sidebar />
           <main className="min-w-0 flex-1 px-4 pb-32 pt-5 lg:px-7 lg:pb-12 lg:pt-6">
             {children}
-            <footer className="mx-auto mt-16 flex max-w-6xl justify-center pb-4">
+            <footer className="mx-auto mt-16 flex max-w-6xl justify-center pb-4 lg:hidden">
               <div className="w-full max-w-[360px] rounded-3xl bg-[var(--logo-panel)] p-5">
                 <Image src="/cricket-logo.png" alt="Cricket illustration with helmet, bat, ball and stumps" width={736} height={736} sizes="360px" className="h-auto w-full rounded-2xl" />
               </div>
