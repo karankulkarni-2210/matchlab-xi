@@ -100,7 +100,7 @@ async function call(pathAndQuery: string, revalidate: number, setAsOf?: (d: stri
   if (status !== "success") {
     const quota = /limit|quota|hits|blocked/i.test(reason ?? "");
     throw new ProviderError(
-      quota ? "CricketData free-plan daily limit (100 calls) reached — resets at 05:30 IST" : `CricketData: ${reason ?? "request failed"}`,
+      quota ? "CricketData free-plan daily limit (100 calls) reached. Resets at 05:30 IST" : `CricketData: ${reason ?? "request failed"}`,
       quota ? "quota" : "http",
     );
   }

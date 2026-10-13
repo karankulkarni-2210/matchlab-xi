@@ -67,7 +67,7 @@ export function ContestEditor({ data, onClose, onSaved }: { data: BuildResult; o
         body: JSON.stringify({ matchId: data.bundle.match.id, players, ruleId, rulesConfirmed, lineupsConfirmed: lineups, sourceLabel, sourceAsOf: asOf ? new Date(asOf).toISOString() : null }),
       });
       const j = await res.json();
-      if (!res.ok) throw new Error(j.error + (j.details ? ` — ${JSON.stringify(j.details).slice(0, 200)}` : ""));
+      if (!res.ok) throw new Error(j.error + (j.details ? `: ${JSON.stringify(j.details).slice(0, 200)}` : ""));
       setMsg({ tone: "ok", text: "Saved. Rebuilding with your contest data…" });
       onSaved();
     } catch (e) {

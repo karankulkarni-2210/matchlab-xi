@@ -79,10 +79,10 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
           sub={m.complete ? "All 11 entered" : `Partial ${m.partialActualTotal} from ${m.nEntered}/${m.nTotal} entered`}
           tone={m.complete ? "lime" : undefined}
         />
-        <Stat label="Mean absolute error" value={m.mae === null ? "—" : `${m.mae} pts`} sub={`Entered players only · N = ${m.nEntered}`} />
+        <Stat label="Mean absolute error" value={m.mae === null ? "n/a" : `${m.mae} pts`} sub={`Entered players only · N = ${m.nEntered}`} />
         <Stat
           label="Signed bias (predicted − actual)"
-          value={m.bias === null ? "—" : `${m.bias > 0 ? "+" : ""}${m.bias}`}
+          value={m.bias === null ? "n/a" : `${m.bias > 0 ? "+" : ""}${m.bias}`}
           sub={m.bias === null ? "No actuals yet" : m.bias > 0 ? "Positive = overprediction" : m.bias < 0 ? "Negative = underprediction" : "No bias"}
           tone={m.bias === null ? undefined : m.bias > 0 ? "over" : m.bias < 0 ? "under" : undefined}
         />
@@ -144,7 +144,7 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
                         {((p && !p.ok && p.error) || fieldErr[r.id]) && <div className="mt-1 text-[11px] text-bad">{fieldErr[r.id] ?? (p && !p.ok ? p.error : "")}</div>}
                       </td>
                       <td className={cx("num px-4 text-right font-semibold", err === null ? "text-faint" : err > 0 ? "text-over" : err < 0 ? "text-under" : "text-muted")}>
-                        {err === null ? "—" : `${err > 0 ? "+" : ""}${err}`}
+                        {err === null ? "n/a" : `${err > 0 ? "+" : ""}${err}`}
                         {big && <span className="block text-[10px] font-normal text-faint">{err! > 0 ? "large over" : "large under"}</span>}
                       </td>
                     </tr>
@@ -190,9 +190,9 @@ export function Review({ team, rows: initialRows, canEdit }: { team: ReviewTeam;
             </div>
             <ul className="mt-2 space-y-1 text-xs text-muted">
               <li>
-                <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-gold" aria-hidden /> Actual entered ({points.length}) — a real 0 is plotted
+                <span className="mr-2 inline-block h-2.5 w-2.5 rounded-full bg-gold" aria-hidden /> Actual entered ({points.length}): a real 0 is plotted
               </li>
-              <li>Actual pending ({pending}) — unknown, not plotted</li>
+              <li>Actual pending ({pending}): unknown, not plotted</li>
               <li>- - Perfect prediction (y = x); points below the line were overpredicted</li>
             </ul>
           </section>

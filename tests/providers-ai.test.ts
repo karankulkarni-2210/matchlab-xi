@@ -146,3 +146,10 @@ describe("contest CSV import", () => {
     expect(r.errors[0].message).toMatch(/name/);
   });
 });
+
+describe("display rules", () => {
+  it("strips em dashes from model text, deeply", async () => {
+    const { stripEmDashes } = await import("@/lib/ai/gemini");
+    expect(stripEmDashes({ a: "Strong venue record — 61 pts", b: ["x — y"], n: 3 })).toEqual({ a: "Strong venue record, 61 pts", b: ["x, y"], n: 3 });
+  });
+});

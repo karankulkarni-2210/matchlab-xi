@@ -18,13 +18,13 @@ async function postJson<T>(url: string, body: unknown, timeoutMs = 45000): Promi
   try {
     res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
   } catch (e) {
-    throw new Error((e as Error).name === "AbortError" ? `Timed out after ${Math.round(timeoutMs / 1000)} s — nothing changed. Try again.` : "Network error — nothing changed. Check your connection and retry.");
+    throw new Error((e as Error).name === "AbortError" ? `Timed out after ${Math.round(timeoutMs / 1000)} s. Nothing changed, try again.` : "Network error. Nothing changed; check your connection and retry.");
   } finally {
     clearTimeout(timer);
   }
   const j = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
   if (!res.ok) {
-    const det = Array.isArray(j.details) ? ` — ${j.details.map((d: { message?: string } | string) => (typeof d === "string" ? d : d.message)).join("; ")}` : "";
+    const det = Array.isArray(j.details) ? `: ${j.details.map((d: { message?: string } | string) => (typeof d === "string" ? d : d.message)).join("; ")}` : "";
     throw new Error((j.error ?? `HTTP ${res.status}`) + det);
   }
   return j as T;
@@ -92,7 +92,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
     const r = await withSelection(sel, "swap");
     if (r) {
       setSelectedKey(benchKey);
-      setNotice(r.validation?.valid ? { tone: "ok", text: "Swap applied and re-validated." } : { tone: "warn", text: "Swap applied but the team is now invalid — see the violations below." });
+      setNotice(r.validation?.valid ? { tone: "ok", text: "Swap applied and re-validated." } : { tone: "warn", text: "Swap applied but the team is now invalid. See the violations below." });
     }
   };
   const setCaptain = (k: string, vc: boolean) => {
@@ -158,7 +158,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
         .map((p) => `${p.name}${p.key === t.captainKey ? " (C)" : p.key === t.viceCaptainKey ? " (VC)" : ""} ${p.credits ?? "?"}cr`)
         .join(", ");
     const text = [
-      `MatchLab XI — ${m.teamShort[0]} vs ${m.teamShort[1]} · ${m.title}${data.bundle.isDemo ? " (SYNTHETIC DEMO)" : practice ? " (PRACTICE — illustrative credits, not Dream11)" : ""}`,
+      `MatchLab XI · ${m.teamShort[0]} vs ${m.teamShort[1]} · ${m.title}${data.bundle.isDemo ? " (SYNTHETIC DEMO)" : practice ? " (PRACTICE: illustrative credits, not Dream11)" : ""}`,
       `Status: ${v?.status === "ready" ? "Ready" : v?.status === "valid_provisional" ? "Valid, provisional" : "Invalid"} · ${data.totals.credits ?? "?"}/${rules.creditCap} credits · ${rules.label}`,
       `C: ${fById.get(t.captainKey ?? "")?.name ?? "-"} · VC: ${fById.get(t.viceCaptainKey ?? "")?.name ?? "-"}`,
       `WK: ${byRole("WK")}`,
@@ -169,7 +169,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
     ].join("\n");
     try {
       await navigator.clipboard.writeText(text);
-      setNotice({ tone: "ok", text: "Team copied — paste it in your league chat or use it to enter the team in Dream11." });
+      setNotice({ tone: "ok", text: "Team copied. Paste it in your league chat or use it to enter the team in Dream11." });
     } catch {
       setNotice({ tone: "warn", text: "Clipboard unavailable in this browser." });
     }
@@ -232,7 +232,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
     <div className="rounded-2xl bg-clover-2 px-3 py-2.5">
       <dt className="eyebrow text-[10px] text-faint">{label}</dt>
       <dd className={cx("num mt-1 text-lg font-semibold", value === null || value === undefined ? "text-faint" : "text-cream")}>
-        {value === null || value === undefined ? "—" : value}
+        {value === null || value === undefined ? "n/a" : value}
         {hint && <span className="ml-1 text-xs font-normal text-faint">{hint}</span>}
       </dd>
     </div>
@@ -253,7 +253,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
             {metric("Sample", venue.matches, venue.matches === 1 ? "T20I" : "T20Is")}
           </dl>
         ) : (
-          <p className="text-xs text-faint">Venue not in the history data — venue factor falls back to player baselines.</p>
+          <p className="text-xs text-faint">Venue not in the history data, so the venue factor falls back to player baselines.</p>
         )}
         {venue && venue.matches < 5 && <p className="text-xs text-warn">Small sample: the venue signal is shrunk heavily toward neutral.</p>}
       </section>
@@ -288,12 +288,12 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
           <li className="flex justify-between gap-2">
             <span className="text-muted">Lineups confirmed</span>
             <span>
-              {m.teamShort[0]} {data.contest.contest.lineupsConfirmed.teamA ? "✓" : "—"} · {m.teamShort[1]} {data.contest.contest.lineupsConfirmed.teamB ? "✓" : "—"}
+              {m.teamShort[0]} {data.contest.contest.lineupsConfirmed.teamA ? "✓" : "✗"} · {m.teamShort[1]} {data.contest.contest.lineupsConfirmed.teamB ? "✓" : "✗"}
             </span>
           </li>
           <li className="flex justify-between gap-2">
             <span className="text-muted">Values as of</span>
-            <span className="text-right text-xs">{data.contest.contest.sourceAsOf ? ago(data.contest.contest.sourceAsOf) : "—"}</span>
+            <span className="text-right text-xs">{data.contest.contest.sourceAsOf ? ago(data.contest.contest.sourceAsOf) : "n/a"}</span>
           </li>
         </ul>
         <p className="text-xs text-faint">{data.contest.contest.sourceLabel}</p>
@@ -377,7 +377,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
           <span className="flex items-start gap-2">
             <FlaskConical size={16} className="mt-0.5 shrink-0" aria-hidden />
             <span>
-              <b>Practice mode.</b> {data.practice.filled} credits are illustrative values generated by MatchLab from projected points (6.5–11, stronger projection = pricier) — <b>not Dream11 credits</b>. Forecasts, evidence and rules are real; teams here are never marked Ready.
+              <b>Practice mode.</b> {data.practice.filled} credits are illustrative values generated by MatchLab from projected points (6.5–11, stronger projection = pricier), <b>not Dream11 credits</b>. Forecasts, evidence and rules are real; teams here are never marked Ready.
               {data.practice.autoExcluded.length > 0 && ` ${data.practice.autoExcluded.length} players with no T20I in the last 12 months start excluded (select one to allow).`}
             </span>
           </span>
@@ -416,7 +416,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
               <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 <span className="font-semibold">Match context</span>
                 <span className="text-muted">
-                  {venue ? `1st-inns avg ${venue.avgFirstInnings ?? "—"} · ${venue.matches} T20Is` : "venue not in data"}
+                  {venue ? `1st-inns avg ${venue.avgFirstInnings ?? "n/a"} · ${venue.matches} T20Is` : "venue not in data"}
                   {w ? ` · ${w.temperatureC ?? "?"}°C, rain ${w.precipitationProbability ?? "?"}%` : ""}
                   {` · ${creditsKnown}/${data.contest.contest.players.length} credits`}
                 </span>
@@ -439,7 +439,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
                     <li key={p}>{p}</li>
                   ))}
                 </ul>
-                <p className="text-sm text-muted">MatchLab does not relax rules or estimate credits. Enter your contest data to continue — forecasts for every player are below.</p>
+                <p className="text-sm text-muted">MatchLab does not relax rules or estimate credits. Enter your contest data to continue; forecasts for every player are below.</p>
                 {data.practice.available && !practice && (
                   <Link href={`/build/${m.id}?practice=1`} className="btn-primary focus-ring inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold">
                     <FlaskConical size={15} aria-hidden /> Explore with illustrative practice credits
@@ -518,7 +518,7 @@ export function BuildXI({ initial }: { initial: BuildResult }) {
                                 In XI{data.team?.captainKey === f.key ? " · C" : data.team?.viceCaptainKey === f.key ? " · VC" : ""}
                               </span>
                             ) : (
-                              <span className="text-faint">{br?.text ?? "—"}</span>
+                              <span className="text-faint">{br?.text ?? "Not selected"}</span>
                             )}
                           </td>
                         </tr>

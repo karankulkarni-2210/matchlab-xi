@@ -47,7 +47,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
       const j = await res.json();
       if (!res.ok) throw new Error(j.error ?? `HTTP ${res.status}`);
       if (label === "propose")
-        setMsg({ tone: j.ai?.status === "fresh" || j.ai?.status === "cached" ? "ok" : "warn", text: j.ai?.status === "fresh" || j.ai?.status === "cached" ? `Proposal v${j.version} created with Gemini (${j.ai.status}).` : `Proposal v${j.version} created from the deterministic candidate — Gemini ${j.ai?.status}: ${j.ai?.error ?? ""}` });
+        setMsg({ tone: j.ai?.status === "fresh" || j.ai?.status === "cached" ? "ok" : "warn", text: j.ai?.status === "fresh" || j.ai?.status === "cached" ? `Proposal v${j.version} created with Gemini (${j.ai.status}).` : `Proposal v${j.version} created from the deterministic candidate (Gemini ${j.ai?.status}: ${j.ai?.error ?? ""})` });
       else setMsg({ tone: "ok", text: label === "accept" ? "Accepted. Future builds use the new version; saved teams keep theirs." : label === "reject" ? "Rejected and recorded." : label === "reset" ? "Demo dataset restored." : "Rolled back." });
       router.refresh();
     } catch (e) {
@@ -65,8 +65,8 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Stat label="Reviewed matches" value={data.overall.matches} sub={data.synthetic ? "Synthetic demo history" : "Aryan's real matches"} />
-        <Stat label="Player results with actuals" value={data.overall.n} sub={`MAE ${data.overall.mae ?? "—"} pts`} />
-        <Stat label="Bias (predicted − actual)" value={bias === null ? "—" : `${bias > 0 ? "+" : ""}${bias} pts`} sub="Positive bias = overprediction" tone={bias === null ? undefined : bias > 0 ? "over" : "under"} />
+        <Stat label="Player results with actuals" value={data.overall.n} sub={`MAE ${data.overall.mae ?? "n/a"} pts`} />
+        <Stat label="Bias (predicted − actual)" value={bias === null ? "n/a" : `${bias > 0 ? "+" : ""}${bias} pts`} sub="Positive bias = overprediction" tone={bias === null ? undefined : bias > 0 ? "over" : "under"} />
       </div>
 
       <section className="panel p-4" aria-labelledby="pva">
@@ -231,7 +231,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
               {proposed.backtest && (
                 <p className="text-xs text-muted">
                   Replay on the same {String(proposed.backtest.n)} stored results: MAE {String(proposed.backtest.currentMae)} → {String(proposed.backtest.proposedMae)}, bias {String(proposed.backtest.currentBias)} → {String(proposed.backtest.proposedBias)}.{" "}
-                  <b className="text-warn">In-sample only — improvement not yet validated.</b>
+                  <b className="text-warn">In-sample only: improvement not yet validated.</b>
                 </p>
               )}
               <div className="grid gap-2 sm:grid-cols-2">
@@ -248,7 +248,7 @@ export function Learning({ data, canAct, actHint }: { data: Overview; canAct: bo
               <p className="text-muted">
                 {data.gate.met
                   ? flagged.length
-                    ? "Evidence is sufficient and a pattern is flagged. Ask Gemini to summarise it and propose a bounded update — you decide."
+                    ? "Evidence is sufficient and a pattern is flagged. Ask Gemini to summarise it and propose a bounded update. You decide."
                     : "Evidence is sufficient but no consistent pattern clears the thresholds, so no change is proposed."
                   : "Not enough reviewed results to propose any change. Keep entering actual points after matches."}
               </p>

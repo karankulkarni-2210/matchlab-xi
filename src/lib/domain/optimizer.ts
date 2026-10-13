@@ -334,9 +334,9 @@ export function benchReasons(
         ex.reason === "CONFIRMED_OUT"
           ? "Not in the announced playing XI."
           : ex.reason === "UNKNOWN_CREDITS"
-            ? "Credits unknown — enter contest credits to consider this player."
+            ? "Credits unknown. Enter contest credits to consider this player."
             : ex.reason === "UNKNOWN_ROLE"
-              ? "Contest role unknown — set WK/BAT/AR/BOWL to consider this player."
+              ? "Contest role unknown. Set WK/BAT/AR/BOWL to consider this player."
               : "Excluded by you.";
       reasons.push({ key: p.key, code: ex.reason, text, bestSwapKey: null, scoreDelta: null });
       continue;

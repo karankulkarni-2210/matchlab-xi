@@ -32,7 +32,7 @@ export function provisionalContest(bundle: MatchBundle): ContestInput {
     rules: getRules(null),
     rulesConfirmedAt: null,
     lineupsConfirmed: { teamA: false, teamB: false },
-    sourceLabel: "Provider squad only — credits and contest roles not yet entered",
+    sourceLabel: "Provider squad only: credits and contest roles not yet entered",
     sourceAsOf: null,
   };
 }

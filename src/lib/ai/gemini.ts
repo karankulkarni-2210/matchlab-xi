@@ -25,6 +25,14 @@ const memory = new Map<string, { output: unknown; createdAt: string; model: stri
 const calls: number[] = [];
 const MAX_CALLS_PER_MINUTE = 8;
 
+/** Display rule: no em dashes anywhere in the UI, including model text (fresh or cached). */
+export function stripEmDashes<T>(v: T): T {
+  if (typeof v === "string") return v.replace(/\s*\u2014\s*/g, ", ") as T;
+  if (Array.isArray(v)) return v.map(stripEmDashes) as T;
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, stripEmDashes(x)])) as T;
+  return v;
+}
+
 export function aiCacheKey(kind: string, parts: unknown) {
   return createHash("sha256")
     .update(`${kind}|${env.geminiModel}|${PROMPT_VERSION}|${JSON.stringify(parts)}`)
@@ -63,15 +71,19 @@ export async function geminiJson<T>(opts: {
   timeoutMs?: number;
 }): Promise<AiResult<T>> {
   const key = aiCacheKey(opts.kind, opts.evidence);
+  const check = (raw: unknown) => {
+    const v = opts.validate(raw);
+    return v.ok ? { ok: true as const, value: stripEmDashes(v.value) } : v;
+  };
   const model = env.geminiModel;
   const cached = await readCache(key);
   if (cached && !opts.regenerate) {
-    const v = opts.validate(cached.output);
+    const v = check(cached.output);
     if (v.ok) return { status: "cached", output: v.value, model: cached.model, generatedAt: cached.createdAt, cacheKey: key };
   }
   const fallbackCached = (status: AiStatus, error: string): AiResult<T> => {
     if (cached) {
-      const v = opts.validate(cached.output);
+      const v = check(cached.output);
       if (v.ok) return { status: "cached", output: v.value, model: cached.model, generatedAt: cached.createdAt, error: `${status}: ${error}`, cacheKey: key };
     }
     return { status, output: null, model, generatedAt: null, error, cacheKey: key };
@@ -93,7 +105,7 @@ export async function geminiJson<T>(opts: {
       signal: ctrl.signal,
       headers: { "Content-Type": "application/json", "x-goog-api-key": env.geminiApiKey },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: opts.system }] },
+        systemInstruction: { parts: [{ text: `${opts.system}\nStyle: never use em dashes; use commas, colons or full stops instead.` }] },
         contents: [{ role: "user", parts: [{ text: opts.prompt }] }],
         generationConfig: {
           responseMimeType: "application/json",
@@ -117,7 +129,7 @@ export async function geminiJson<T>(opts: {
     } catch {
       return fallbackCached("invalid", `Model returned non-JSON output (finish: ${body.candidates?.[0]?.finishReason ?? "?"})`);
     }
-    const v = opts.validate(raw);
+    const v = check(raw);
     if (!v.ok) return fallbackCached("invalid", `Output failed validation: ${v.error}`);
     const generatedAt = await writeCache(key, opts.kind, v.value);
     return { status: "fresh", output: v.value, model, generatedAt, cacheKey: key };

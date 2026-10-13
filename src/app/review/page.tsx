@@ -36,7 +36,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         <div className="panel space-y-2 p-6 text-sm text-muted">
           <p>No saved teams yet.</p>
           <p>
-            Build and save an XI first — try the <Link className="text-gold underline" href="/build/demo-hh-dd">demo match</Link>.
+            Build and save an XI first. Try the <Link className="text-gold underline" href="/build/demo-hh-dd">demo match</Link>.
           </p>
         </div>
       )}
@@ -45,7 +45,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
         <>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="text-lg font-semibold">{loaded.team.match_label}</span>
-            {loaded.team.is_demo && <Pill tone="info">Synthetic demo — fictional players</Pill>}
+            {loaded.team.is_demo && <Pill tone="info">Synthetic demo · fictional players</Pill>}
             <Pill tone={loaded.team.status === "ready" ? "ok" : "warn"}>{loaded.team.status === "ready" ? "Saved as Ready" : "Saved provisional"}</Pill>
           </div>
           <Review

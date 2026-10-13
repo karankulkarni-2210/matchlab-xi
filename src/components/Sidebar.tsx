@@ -57,7 +57,7 @@ export function Sidebar() {
           </div>
           <div className="rounded-2xl border border-line p-3 text-muted">
             <div className="font-medium text-cream">Aryan&apos;s workspace</div>
-            <div className="mt-1">Single-user app — no sign-in. The demo match is synthetic and kept separate.</div>
+            <div className="mt-1">Single-user app, no sign-in. The demo match is synthetic and kept separate.</div>
           </div>
           <div className="text-faint">Gemini Flash · CricketData · Cricsheet · Open-Meteo</div>
         </div>

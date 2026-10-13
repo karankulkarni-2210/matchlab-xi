@@ -57,7 +57,7 @@ const badge = (id: string, label: string, s: Sourced<unknown>, url: string, deta
   url,
   asOf: s.fetchedAt,
   status: s.status,
-  detail: s.error ? `${detail} — refresh failed: ${s.error}` : detail,
+  detail: s.error ? `${detail}; refresh failed: ${s.error}` : detail,
 });
 
 export async function listMatches(): Promise<{ matches: MatchSummary[]; sources: SourceBadge[]; errors: string[] }> {
@@ -193,7 +193,7 @@ function demoBundle(): MatchBundle {
     match: { ...DEMO_MATCH, teams: [...DEMO_MATCH.teams] as [string, string], teamShort: [...DEMO_MATCH.teamShort] as [string, string] },
     venue: DEMO_VENUE,
     weather: null,
-    weatherNote: "Synthetic fixture — no real weather.",
+    weatherNote: "Synthetic fixture, no real weather.",
     squad: [...hist.values()].map((h) => ({
       key: h.id,
       name: h.name,

@@ -9,7 +9,7 @@ const bodoni = Bodoni_Moda({ variable: "--font-bodoni", subsets: ["latin"], disp
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "MatchLab XI — Fantasy Cricket Match Day Optimizer",
+  title: "MatchLab XI · Fantasy Cricket Match Day Optimizer",
   description: "Evidence-based Dream11 team building with a post-match learning loop.",
 };
 export const viewport: Viewport = { themeColor: "#334310", width: "device-width", initialScale: 1 };

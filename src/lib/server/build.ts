@@ -108,7 +108,7 @@ export async function buildMatch(
   }
   const validation = team ? validateTeam(team, contest.players, contest.rules, contestCtx) : null;
   if (validation && practiceActive) {
-    validation.readinessBlockers.unshift({ code: "ILLUSTRATIVE_CREDITS", message: "Credits are illustrative practice values, not from your Dream11 contest — not submittable." });
+    validation.readinessBlockers.unshift({ code: "ILLUSTRATIVE_CREDITS", message: "Credits are illustrative practice values, not from your Dream11 contest, so not submittable." });
     if (validation.status === "ready") validation.status = "valid_provisional";
   }
   const bench = team && validation ? benchReasons(contest.players, fMap, { ...team }, contest.rules, exclusions) : [];
@@ -165,7 +165,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
         v.chaseWinPct !== null ? `chasing side won ${v.chaseWinPct}%` : null,
         v.batIndex !== null ? `batting points index ${v.batIndex} (n=${v.batIndexN})` : null,
         v.bowlIndex !== null ? `bowling points index ${v.bowlIndex} (n=${v.bowlIndexN})` : null,
-        v.matches < 5 ? "small sample — venue signal is shrunk heavily toward neutral" : null,
+        v.matches < 5 ? "small sample, so the venue signal is shrunk heavily toward neutral" : null,
       ]
         .filter(Boolean)
         .join("; "),
@@ -191,7 +191,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
     id: "contest",
     kind: "contest",
     title: `Contest data: ${c.sourceLabel}`,
-    detail: `${c.players.filter((p) => p.credits !== null).length}/${c.players.length} credits known; lineups confirmed — ${bundle.match.teams[0]}: ${c.lineupsConfirmed.teamA ? "yes" : "no"}, ${bundle.match.teams[1]}: ${c.lineupsConfirmed.teamB ? "yes" : "no"}.`,
+    detail: `${c.players.filter((p) => p.credits !== null).length}/${c.players.length} credits known; lineups confirmed: ${bundle.match.teams[0]}: ${c.lineupsConfirmed.teamA ? "yes" : "no"}, ${bundle.match.teams[1]}: ${c.lineupsConfirmed.teamB ? "yes" : "no"}.`,
     source: loaded.origin === "demo" ? "Synthetic demo" : loaded.origin === "owner" ? "Owner-entered" : loaded.origin === "practice" ? "Practice mode (illustrative credits)" : "Provider squad",
     asOf: c.sourceAsOf,
   });
@@ -208,7 +208,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
       id: `hist:${f.key}`,
       kind: "history",
       title: `${f.name}: ${f.historySample} recent T20I(s)`,
-      detail: `${f.factors.form.note}. ${f.factors.opportunity.note}. ${f.factors.venue.note}.${f.historyMatched ? ` Matched as "${f.historyName}" (${f.matchMethod}).` : " No history match — forecast is the role prior."}${f.staleHistory ? ` Last T20I in the data was ${f.lastT20I}: recent selection unknown — confirm they are in your contest pool.` : ""}`,
+      detail: `${f.factors.form.note}. ${f.factors.opportunity.note}. ${f.factors.venue.note}.${f.historyMatched ? ` Matched as "${f.historyName}" (${f.matchMethod}).` : " No history match, so the forecast is the role prior."}${f.staleHistory ? ` Last T20I in the data was ${f.lastT20I}: recent selection unknown, so confirm they are in your contest pool.` : ""}`,
       source: histSrc,
       asOf: f.lastT20I,
     });
@@ -218,7 +218,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
       id: `lineup:${f.key}`,
       kind: "lineup",
       title: `${f.name}: ${f.lineup.replace("_", " ")}`,
-      detail: f.lineup === "confirmed_xi" ? "In the announced playing XI." : f.lineup === "confirmed_out" ? "Not in the announced XI." : "XI not announced — availability uncertain.",
+      detail: f.lineup === "confirmed_xi" ? "In the announced playing XI." : f.lineup === "confirmed_out" ? "Not in the announced XI." : "XI not announced, availability uncertain.",
       source: loaded.origin === "owner" ? "Owner-entered lineup" : loaded.origin === "demo" ? "Synthetic demo" : "Provider squad (not an XI)",
       asOf: c.sourceAsOf,
     });

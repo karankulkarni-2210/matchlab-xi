@@ -130,7 +130,7 @@ export function PlayerPanel({
             {Math.round(player.coverage * 100)}%
           </div>
           <div className="text-[11px] text-faint">
-            {player.historyMatched ? `History: ${player.historyName} (${player.matchMethod})` : "No history match — role prior used"}
+            {player.historyMatched ? `History: ${player.historyName} (${player.matchMethod})` : "No history match, role prior used"}
           </div>
         </div>
       </div>
@@ -160,7 +160,7 @@ export function PlayerPanel({
                   return (
                     <li key={id} className="text-xs">
                       <span className="font-semibold text-cream">{ev?.title ?? id}</span>
-                      {ev && <span className="block text-faint">{ev.detail} — {ev.source}</span>}
+                      {ev && <span className="block text-faint">{ev.detail} · Source: {ev.source}</span>}
                     </li>
                   );
                 })}
@@ -168,7 +168,7 @@ export function PlayerPanel({
             </details>
           </div>
         ) : (
-          <p className="text-sm text-faint">{inXi ? "Generate reasons to see the match-specific case." : "—"}</p>
+          <p className="text-sm text-faint">{inXi ? "Generate reasons to see the match-specific case." : "No reasons yet."}</p>
         )}
       </section>
 

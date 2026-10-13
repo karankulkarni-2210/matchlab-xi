@@ -80,7 +80,7 @@ export function Initials({ name, tone = "lime", size = 40 }: { name: string; ton
 }
 
 export function fmtTime(iso: string | null | undefined, withDate = true) {
-  if (!iso) return "—";
+  if (!iso) return "n/a";
   const d = new Date(iso.length === 10 ? iso + "T00:00:00Z" : iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString("en-IN", {
