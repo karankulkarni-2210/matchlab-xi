@@ -26,7 +26,7 @@ export interface BuildResult {
   contest: LoadedContest;
   weights: ActiveWeights;
   forecastVersion: string;
-  forecasts: (PlayerForecast & { matchMethod: string; historyName: string | null; lastT20I: string | null; staleHistory: boolean })[];
+  forecasts: (PlayerForecast & { matchMethod: string; historyName: string | null; lastT20: string | null; staleHistory: boolean })[];
   team: TeamSelection | null;
   optimizer: { feasible: boolean; optimal: boolean; objective: number | null; nodes: number; violations: Violation[]; exclusions: Exclusion[] } | null;
   validation: TeamValidation | null;
@@ -63,18 +63,18 @@ export async function buildMatch(
     let history = s?.history ?? null;
     let method: string = s?.matchMethod ?? "none";
     let historyName = s?.historyName ?? null;
-    let lastT20I = s?.lastT20I ?? null;
+    let lastT20 = s?.lastT20 ?? null;
     if (!bundle.isDemo && (p.historyName || !s)) {
       const m = matchPlayer(p.name, p.team, p.historyName);
       history = m.history;
       method = m.method;
       historyName = m.historyName;
-      lastT20I = m.lastDate;
+      lastT20 = m.lastDate;
     }
-    const daysSinceLast = lastT20I ? Math.round((Date.parse(bundle.match.startsAt) - Date.parse(lastT20I)) / 86400000) : null;
-    // Evidence-quality flag only: a long gap since the last T20I is shown, never used to guess the XI.
+    const daysSinceLast = lastT20 ? Math.round((Date.parse(bundle.match.startsAt) - Date.parse(lastT20)) / 86400000) : null;
+    // Evidence-quality flag only: a long gap since the last T20 is shown, never used to guess the XI.
     const staleHistory = daysSinceLast !== null && daysSinceLast > 365;
-    return { ...forecastPlayer(p, history, ctx), matchMethod: method, historyName, lastT20I, staleHistory };
+    return { ...forecastPlayer(p, history, ctx), matchMethod: method, historyName, lastT20, staleHistory };
   });
 
   // Practice mode: fill ONLY unknown credits with labelled illustrative values (never on the demo, never overwriting owner data).
@@ -89,7 +89,7 @@ export async function buildMatch(
     for (const f of forecasts) f.credits = creditBy.get(f.key) ?? f.credits;
     contest = { ...contest, players, sourceLabel: PRACTICE_LABEL };
     loaded = { ...loaded, contest, origin: "practice", notes: [`Practice mode: ${filledCount} credits are illustrative (not from Dream11). Teams built here can be explored and saved, but are never marked Ready.`] };
-    // Players with no T20I in the data for 12+ months start excluded (visible, one click to allow) — a preference, not a lineup claim.
+    // Players with no T20 in the data for 12+ months start excluded (visible, one click to allow) — a preference, not a lineup claim.
     if (!opts.excludedKeys) autoExcluded = forecasts.filter((f) => f.staleHistory).map((f) => f.key);
   }
   const fMap = new Map(forecasts.map((f) => [f.key, f]));
@@ -152,13 +152,13 @@ export async function buildMatch(
 
 function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: BuildResult["forecasts"]): EvidenceItem[] {
   const ev: EvidenceItem[] = [];
-  const histSrc = bundle.isDemo ? "Synthetic demo history" : "Cricsheet men's T20Is";
+  const histSrc = bundle.isDemo ? "Synthetic demo history" : "Cricsheet men's T20s (internationals + leagues)";
   const v = bundle.venue;
   if (v) {
     ev.push({
       id: `venue:${v.key}`,
       kind: "venue",
-      title: `${v.name}: ${v.matches} T20I(s) in history`,
+      title: `${v.name}: ${v.matches} T20(s) in history`,
       detail: [
         v.avgFirstInnings !== null ? `avg 1st-innings ${v.avgFirstInnings}` : null,
         v.avgSecondInnings !== null ? `avg 2nd-innings ${v.avgSecondInnings}` : null,
@@ -173,7 +173,7 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
       asOf: bundle.historyAsOf,
     });
   } else {
-    ev.push({ id: "venue:none", kind: "venue", title: "Venue not in history", detail: `${bundle.match.venue} has no T20Is in the dataset; venue factor uses player baselines.`, source: histSrc, asOf: bundle.historyAsOf });
+    ev.push({ id: "venue:none", kind: "venue", title: "Venue not in history", detail: `${bundle.match.venue} has no T20s in the dataset; venue factor uses player baselines.`, source: histSrc, asOf: bundle.historyAsOf });
   }
   if (bundle.weather) {
     const w = bundle.weather;
@@ -207,13 +207,13 @@ function buildEvidence(bundle: MatchBundle, loaded: LoadedContest, forecasts: Bu
     ev.push({
       id: `hist:${f.key}`,
       kind: "history",
-      title: `${f.name}: ${f.historySample} recent T20I(s)`,
-      detail: `${f.factors.form.note}. ${f.factors.opportunity.note}. ${f.factors.venue.note}.${f.historyMatched ? ` Matched as "${f.historyName}" (${f.matchMethod}).` : " No history match, so the forecast is the role prior."}${f.staleHistory ? ` Last T20I in the data was ${f.lastT20I}: recent selection unknown, so confirm they are in your contest pool.` : ""}`,
+      title: `${f.name}: ${f.historySample} recent T20(s)`,
+      detail: `${f.factors.form.note}. ${f.factors.opportunity.note}. ${f.factors.venue.note}.${f.historyMatched ? ` Matched as "${f.historyName}" (${f.matchMethod}).` : " No history match, so the forecast is the role prior."}${f.staleHistory ? ` Last T20 in the data was ${f.lastT20}: recent selection unknown, so confirm they are in your contest pool.` : ""}`,
       source: histSrc,
-      asOf: f.lastT20I,
+      asOf: f.lastT20,
     });
     if (f.factors.matchup.n > 0)
-      ev.push({ id: `matchup:${f.key}`, kind: "matchup", title: `${f.name} vs opponent`, detail: f.factors.matchup.note, source: histSrc, asOf: f.lastT20I });
+      ev.push({ id: `matchup:${f.key}`, kind: "matchup", title: `${f.name} vs opponent`, detail: f.factors.matchup.note, source: histSrc, asOf: f.lastT20 });
     ev.push({
       id: `lineup:${f.key}`,
       kind: "lineup",

@@ -11,11 +11,42 @@ import { cachedFetch, fetchJson, ProviderError, type Sourced } from "./cache";
 const BASE = "https://api.cricapi.com/v1";
 export const CD_SOURCE_URL = "https://cricketdata.org";
 
-/** Series MatchLab tracks on the Match Desk (verified via series search on 2026-10-12). */
-export const TRACKED_SERIES = [
-  { id: "702ce6cb-a551-4aab-961e-0ed1548a3c74", label: "West Indies tour of India, 2026" },
-  { id: "a67cb0af-300c-4449-8e80-e006301e5706", label: "Sri Lanka tour of Pakistan, 2026" },
+export interface TrackedSeries {
+  id: string;
+  label: string;
+  kind: "international" | "league";
+  /** First and last T20 fixture dates (YYYY-MM-DD, from CricketData series search). */
+  from: string;
+  to: string;
+}
+
+/**
+ * Series MatchLab tracks on the Match Desk (IDs verified via CricketData series search, 2026-10-12 and 2026-10-15).
+ * Men's T20 only: internationals plus franchise/domestic leagues that share Dream11's T20 scoring.
+ */
+export const TRACKED_SERIES: TrackedSeries[] = [
+  { id: "702ce6cb-a551-4aab-961e-0ed1548a3c74", label: "West Indies tour of India, 2026", kind: "international", from: "2026-10-06", to: "2026-10-17" },
+  { id: "a67cb0af-300c-4449-8e80-e006301e5706", label: "Sri Lanka tour of Pakistan, 2026", kind: "international", from: "2026-10-09", to: "2026-10-13" },
+  { id: "7d61737b-c4d8-4f44-b8cb-309ce4d9c57a", label: "Afghanistan vs Zimbabwe in UAE, 2026", kind: "international", from: "2026-10-27", to: "2026-11-01" },
+  { id: "3010394d-4de6-4843-8782-f41ecadf17b7", label: "CSA T20 Challenge 2026", kind: "league", from: "2026-09-25", to: "2026-11-14" },
+  { id: "d7c7977a-0a0a-41d2-9e2b-6481943eee7c", label: "Syed Mushtaq Ali Trophy 2026", kind: "league", from: "2026-11-14", to: "2026-12-06" },
+  { id: "03ae5892-ea9f-4662-95f4-879d04dd2399", label: "International League T20 2026", kind: "league", from: "2026-11-21", to: "2026-12-20" },
+  { id: "c6ae878d-fcb7-4342-a7d7-a65ee3fe3de2", label: "Big Bash League 2026-27", kind: "league", from: "2026-12-12", to: "2027-01-26" },
+  { id: "f55cb152-7e06-4640-b4d6-abf7af1b7bba", label: "Super Smash 2026-27", kind: "league", from: "2026-12-27", to: "2027-01-30" },
+  { id: "945b11eb-ccb7-46af-b0bb-3dcda50330dd", label: "SA20 2027", kind: "league", from: "2027-01-17", to: "2027-02-21" },
 ];
+
+const DAY = 86400e3;
+/** Quota guard: a series is only fetched from 14 days before its first T20 to 7 days after its last. */
+export function seriesInWindow(s: Pick<TrackedSeries, "from" | "to">, nowMs: number) {
+  return nowMs >= Date.parse(`${s.from}T00:00:00Z`) - 14 * DAY && nowMs <= Date.parse(`${s.to}T23:59:59Z`) + 7 * DAY;
+}
+
+export function seasonStatus(s: Pick<TrackedSeries, "from" | "to">, nowMs: number): "upcoming" | "live" | "ended" {
+  if (nowMs < Date.parse(`${s.from}T00:00:00Z`)) return "upcoming";
+  if (nowMs > Date.parse(`${s.to}T23:59:59Z`)) return "ended";
+  return "live";
+}
 
 const Info = z.object({ hitsToday: z.number().optional(), hitsLimit: z.number().optional() }).passthrough();
 // `data` is omitted on failures (e.g. quota exceeded), so it must be optional.

@@ -8,6 +8,8 @@ import {
   getMatchSquad,
   getSeriesMatches,
   providerRoleToContest,
+  seasonStatus,
+  seriesInWindow,
   TRACKED_SERIES,
   type MatchSummary,
   type SquadTeam,
@@ -34,7 +36,7 @@ export interface SquadPlayer {
   history: PlayerHistory | null;
   matchMethod: MatchMethod | "synthetic";
   historyName: string | null;
-  lastT20I: string | null;
+  lastT20: string | null;
 }
 
 export interface MatchBundle {
@@ -60,12 +62,12 @@ const badge = (id: string, label: string, s: Sourced<unknown>, url: string, deta
   detail: s.error ? `${detail}; refresh failed: ${s.error}` : detail,
 });
 
-export async function listMatches(): Promise<{ matches: MatchSummary[]; sources: SourceBadge[]; errors: string[] }> {
+export async function listMatches(nowMs: number = Date.now()): Promise<{ matches: MatchSummary[]; sources: SourceBadge[]; errors: string[] }> {
   const matches: MatchSummary[] = [];
   const sources: SourceBadge[] = [];
   const errors: string[] = [];
   await Promise.all(
-    TRACKED_SERIES.map(async (s) => {
+    TRACKED_SERIES.filter((s) => seriesInWindow(s, nowMs)).map(async (s) => {
       try {
         const r = await getSeriesMatches(s.id);
         matches.push(...r.data);
@@ -88,12 +90,26 @@ export async function listMatches(): Promise<{ matches: MatchSummary[]; sources:
   return { matches: t20, sources, errors };
 }
 
-/** Splits fixtures into upcoming (not ended, starting no more than 6 h ago) and recently completed. */
+/**
+ * Splits fixtures for the Match Desk: upcoming with a published squad (buildable), upcoming without one
+ * (shown as "squad pending", not buildable), and recently completed. Upcoming = not ended, started no more
+ * than 6 h ago, starting within 14 days.
+ */
 export function splitFixtures(matches: MatchSummary[], nowMs: number = Date.now()) {
+  const soon = matches.filter((m) => {
+    const t = new Date(m.startsAt).getTime();
+    return !m.ended && t > nowMs - 6 * 3600e3 && t < nowMs + 14 * 86400e3;
+  });
   return {
-    upcoming: matches.filter((m) => m.hasSquad && !m.ended && new Date(m.startsAt).getTime() > nowMs - 6 * 3600e3),
+    upcoming: soon.filter((m) => m.hasSquad),
+    pending: soon.filter((m) => !m.hasSquad).slice(0, 8),
     recent: matches.filter((m) => m.ended).slice(-3).reverse(),
   };
+}
+
+/** Tracked series with their season status (static dates: costs no API calls). */
+export function trackedSeasons(nowMs: number = Date.now()) {
+  return TRACKED_SERIES.map((s) => ({ ...s, status: seasonStatus(s, nowMs) }));
 }
 
 const historySource = (): SourceBadge => {
@@ -101,11 +117,13 @@ const historySource = (): SourceBadge => {
   return {
     id: "cricsheet",
     label: "Player & venue history",
-    provider: "Cricsheet (men's T20Is)",
+    provider: "Cricsheet (men's T20s)",
     url: "https://cricsheet.org",
     asOf: meta.lastDate,
     status: "static",
-    detail: `${meta.matches} T20Is ${meta.firstDate} → ${meta.lastDate}; points use MatchLab's approximation of Dream11 T20 scoring. ${meta.license}.`,
+    detail: `${meta.matches} men's T20s ${meta.firstDate} → ${meta.lastDate}: ${Object.entries(meta.competitions)
+      .map(([code, c]) => `${code} ${c.matches}`)
+      .join(", ")}. Points use MatchLab's approximation of Dream11 T20 scoring. ${meta.license}.`,
   };
 };
 
@@ -149,7 +167,7 @@ export async function getMatchBundle(matchId: string): Promise<MatchBundle> {
         history: hm.history,
         matchMethod: hm.method,
         historyName: hm.historyName,
-        lastT20I: hm.lastDate,
+        lastT20: hm.lastDate,
       });
     }
   }
@@ -203,7 +221,7 @@ function demoBundle(): MatchBundle {
       history: h,
       matchMethod: "synthetic",
       historyName: h.name,
-      lastT20I: h.recs[0].date,
+      lastT20: h.recs[0].date,
     })),
     squadNote: null,
     sources: [

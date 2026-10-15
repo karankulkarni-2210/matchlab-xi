@@ -13,7 +13,7 @@ Evidence-first Dream11 team building for a serious fantasy player (Aryan): pick 
 
 | Screen | What it does |
 | --- | --- |
-| **Match Desk** (`/`) | Upcoming T20 fixtures fetched live from CricketData (tracked series: West Indies tour of India 2026, Sri Lanka tour of Pakistan 2026), with source/freshness badges, provider data-quality warnings (e.g. T20Is mislabelled `odi`), and the synthetic demo. |
+| **Match Desk** (`/`) | Upcoming men's T20 fixtures fetched live from CricketData: tracked internationals plus league seasons (CSA T20 Challenge, Syed Mushtaq Ali Trophy, ILT20, BBL, Super Smash, SA20). Each series is only fetched from 14 days before its first T20 to 7 days after its last (free-plan quota guard). Fixtures without a published squad are listed as "Squad pending" and are not buildable. Also shows source/freshness badges, provider data-quality warnings (e.g. T20Is mislabelled `odi`), and the synthetic demo. |
 | **Build XI** (`/build/[matchId]`) | Three-panel desktop layout (context · pitch · "Why this pick?") that stacks on a 390 px phone (context → pitch → pool → contest/sources) with a bottom evidence sheet and a sticky validity/action bar. Exact optimizer, swaps, C/VC edits, lock/exclude, re-validation on every change, Gemini reasons, contest CSV/form editor, Save (freeze) and Copy-XI export. |
 | **Match Review** (`/review`) | Enter actual Dream11 **base** points per selected player (blank = not entered, `0` = real zero). Errors are `predicted − actual` (positive = overprediction). MAE/bias over entered players only with N; final total hidden until all 11 are entered; predicted-vs-actual scatter omits pending players. |
 | **Learning Lab** (`/learning`) | MAE, signed bias, sample sizes by role/context; repeated-pattern detection behind a minimum-evidence gate; Gemini summary + bounded weight proposal; Accept / Keep current; version history with rollback. *Demo (synthetic)* and *Aryan's matches* are separate tabs and never mixed. |
@@ -33,7 +33,7 @@ Next.js 16 (App Router, TypeScript, Tailwind v4) on Vercel · Supabase Postgres 
 
 **Data sources (all free):**
 - **CricketData.org** (free plan, 100 hits/day): `series_info`, `match_info`, `match_squad` (10 hits each on the free plan). Cached: fixtures 3 h, status 20 min, squads 12 h; failed refreshes serve the last good snapshot marked **stale**. Responses also sit in Vercel's data cache, with the provider's own `Date` header as the as-of time.
-- **Cricsheet** men's T20I ball-by-ball (2,412 matches, 2022-01-22 → 2026-10-06), pre-aggregated by `scripts/build-history.ts` into `data/history/t20i_male.json` (ODC-BY 1.0, attributed in-app).
+- **Cricsheet** men's T20 ball-by-ball since 2022 (5,060 matches to 2026-10-14): 2,447 T20 internationals plus 14 T20 leagues (IPL, BBL, PSL, CPL, SA20, ILT20, BPL, LPL, MLC, T20 Blast, Super Smash, Syed Mushtaq Ali, CSA T20 Challenge, Nepal Premier League). Pre-aggregated by `scripts/build-history.ts` into `data/history/t20_male.json`; each record carries its competition code, shown in evidence notes such as "last 5 T20(s) (IPL, T20I)". All formats share Dream11's T20 scoring; The Hundred and T10 are excluded (different formats). ODC-BY 1.0, attributed in-app.
 - **Open-Meteo** forecast + geocoding at the scheduled start hour (CC BY 4.0).
 - **Owner-entered contest data** (CSV or form): Dream11 credits, contest roles, lineup status, rule confirmation, source label and timestamp. MatchLab never estimates credits or lineups.
 
@@ -101,7 +101,7 @@ npm run dev                  # http://localhost:3000
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | server only | any Gemini **Flash** model id |
 | `CRICKETDATA_API_KEY` | server only | free plan |
 
-Database: apply `supabase/migrations/*.sql` in order (Supabase SQL editor, CLI, or MCP), then seed the synthetic demo with `npx tsx scripts/demo-seed-compact-sql.ts` (prints SQL), or use **Learning Lab → Reset demo dataset** once the secret key is set. Rebuild the history file with `npx tsx scripts/build-history.ts` (downloads Cricsheet `t20s_male_json.zip` into `.cache/`).
+Database: apply `supabase/migrations/*.sql` in order (Supabase SQL editor, CLI, or MCP), then seed the synthetic demo with `npx tsx scripts/demo-seed-compact-sql.ts` (prints SQL), or use **Learning Lab → Reset demo dataset** once the secret key is set. Rebuild the history file with `npx tsx scripts/build-history.ts` (download steps for the Cricsheet T20I and league dumps are in the script header; files go in `.cache/`).
 
 Checks: `npm test` (vitest), `npx tsc --noEmit`, `npm run build`.
 
@@ -125,7 +125,8 @@ Practice teams are labelled everywhere ("Practice credits", "illustrative credit
 - **Dream11 rules** could not be verified from an official machine-readable source, so they're configurable presets that you confirm per contest. MatchLab never submits teams to Dream11.
 - **Credits/contest roles** have no free API and must be entered by the owner. Until then the real match shows forecasts but no valid XI, by design, unless you explicitly switch to the labelled practice mode.
 - **CricketData `match_squad`** returns the whole tour squad (ODI + T20I, 28 India players) and costs 10 hits on the free plan. Some players have no role (shown as unknown). Lineups are not available pre-toss.
-- **History coverage:** Cricsheet data currently ends 2026-10-06, so the 2nd/3rd T20Is of the current India–West Indies series are not in the evidence yet. Only men's T20Is are loaded (no IPL or women's matches). Some venues have tiny samples (Hyderabad: 2 T20Is), and the venue index shrinks heavily toward neutral. Names are matched by exact/alias/initials within team; ambiguous matches are left unmatched (coverage 0) rather than guessed, and you can set `history_name` in the CSV.
+- **History coverage:** Cricsheet data currently ends 2026-10-14. Men's T20s only (internationals + leagues); no ODIs, Tests or women's matches, because each format has its own Dream11 scoring. Cricsheet's Syed Mushtaq Ali and CSA T20 Challenge coverage is partial (latest 2024). Some venues have small samples and the venue index shrinks heavily toward neutral. Names are matched by exact/alias/initials within team, then by a unique full name across all teams (league transfers, labelled `name-only`); ambiguous matches are left unmatched (coverage 0) rather than guessed, and you can set `history_name` in the CSV.
+- **League fixtures:** CricketData's league fixture lists and squads can be incomplete (the CSA T20 Challenge 2026 listing had 8 fixtures and no squads on 2026-10-15). Tracked series are curated by ID with their T20 date windows; adding a season means adding one line to `TRACKED_SERIES`.
 - **Forecasts are approximate.** Historical points use an approximation of Dream11 scoring, and uncertainty is a spread, not a calibrated interval. No accuracy claims are made. The demo learning history is **synthetic** and excluded from real metrics, and one real match never establishes improvement.
 - **All saving** (workspace and demo) needs `SUPABASE_SECRET_KEY` on the server; without it the deployed app is read-only.
 - Free-tier limits apply: CricketData 100 hits/day, Gemini free-tier rate limits, and Open-Meteo for non-commercial use.

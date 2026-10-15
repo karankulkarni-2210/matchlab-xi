@@ -4,13 +4,54 @@ import { BatIcon, BallIcon } from "@/components/cricket/icons";
 import { StadiumScene } from "@/components/cricket/StadiumScene";
 import { ago, cx, fmtTime, FreshnessPill, Initials, Pill } from "@/components/ui";
 import { DEMO_MATCH, DEMO_MATCH_ID } from "@/lib/demo/demo";
-import { listMatches, splitFixtures, type SourceBadge } from "@/lib/server/match";
+import { listMatches, splitFixtures, trackedSeasons, type SourceBadge } from "@/lib/server/match";
 import type { MatchSummary } from "@/lib/providers/cricketdata";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Match Desk · MatchLab XI" };
 
 const competitionOf = (m: MatchSummary) => m.name.split(", ").slice(2).join(", ") || m.title;
+const shortDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
+
+/** Fixture without a published squad: shown for planning, not buildable (no player pool to optimise). */
+function PendingRow({ m }: { m: MatchSummary }) {
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
+      <span className="min-w-0">
+        <span className="text-cream">
+          {m.teams[0]} vs {m.teams[1]}
+        </span>
+        <span className="block text-xs text-faint">
+          {competitionOf(m)} · {m.title}
+        </span>
+      </span>
+      <span className="flex flex-wrap items-center gap-2 text-xs text-muted">
+        <span className="num">{fmtTime(m.startsAt)} IST</span>
+        <Pill tone="muted">Squad pending</Pill>
+      </span>
+    </li>
+  );
+}
+
+function Seasons({ seasons }: { seasons: ReturnType<typeof trackedSeasons> }) {
+  const shown = seasons.filter((s) => s.status !== "ended");
+  if (!shown.length) return null;
+  return (
+    <div className="space-y-2 pt-2">
+      <h3 className="eyebrow text-muted">Tracked series &amp; league seasons</h3>
+      <ul className="flex flex-wrap gap-2 text-xs">
+        {shown.map((s) => (
+          <li key={s.id} className="rounded-full border border-line bg-pale px-3 py-1.5 text-muted">
+            <span className="text-cream">{s.label}</span>
+            {s.kind === "league" && <span className="ml-1 text-gold">League</span>}
+            <span className="num ml-1.5">{s.status === "live" ? `in progress to ${shortDate(s.to)}` : `starts ${shortDate(s.from)}`}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-faint">Fixtures appear here from 14 days before a series starts, and become buildable once CricketData publishes squads.</p>
+    </div>
+  );
+}
 
 function StatusBadge({ m, demo }: { m: MatchSummary; demo: boolean }) {
   if (demo)
@@ -119,7 +160,8 @@ export default async function MatchDesk() {
   } catch (e) {
     data = { matches: [], sources: [], errors: [(e as Error).message] };
   }
-  const { upcoming, recent } = splitFixtures(data.matches);
+  const { upcoming, pending, recent } = splitFixtures(data.matches);
+  const seasons = trackedSeasons();
   const providerDown = data.errors.length > 0 || data.sources.some((x) => x.status === "stale" || x.status === "missing");
   const demo = { ...DEMO_MATCH, teams: [...DEMO_MATCH.teams] as [string, string], teamShort: [...DEMO_MATCH.teamShort] as [string, string] };
 
@@ -173,7 +215,7 @@ export default async function MatchDesk() {
       {/* Live fixtures */}
       <section id="live" aria-labelledby="up" className="scroll-mt-6 space-y-3">
         <h2 id="up" className="eyebrow text-muted">
-          Live T20 fixtures (CricketData)
+          Live T20 fixtures · internationals &amp; leagues (CricketData)
         </h2>
         {providerDown && (
           <p role="status" className="rounded-2xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm text-warn">
@@ -187,7 +229,17 @@ export default async function MatchDesk() {
             ))}
           </div>
         ) : (
-          <div className="panel p-6 text-sm text-muted">No live fixtures to show right now. The demo match above works end to end.</div>
+          <div className="panel p-6 text-sm text-muted">No buildable live fixtures right now. The demo match above works end to end.</div>
+        )}
+        {pending.length > 0 && (
+          <div className="space-y-2 pt-2">
+            <h3 className="eyebrow text-muted">Coming up · squads not announced yet</h3>
+            <ul className="panel divide-y divide-line text-sm">
+              {pending.map((m) => (
+                <PendingRow key={m.id} m={m} />
+              ))}
+            </ul>
+          </div>
         )}
         {recent.length > 0 && (
           <div className="space-y-2 pt-2">
@@ -204,6 +256,7 @@ export default async function MatchDesk() {
             </ul>
           </div>
         )}
+        <Seasons seasons={seasons} />
       </section>
 
       <Sources sources={data.sources} />

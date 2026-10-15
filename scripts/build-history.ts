@@ -1,11 +1,14 @@
 /**
- * Build data/history/t20i_male.json from Cricsheet's t20s_male JSON dump.
+ * Build data/history/t20_male.json from Cricsheet's men's T20 JSON dumps: T20 internationals plus the
+ * franchise/domestic T20 leagues listed in COMPETITIONS (same Dream11 T20 scoring for all).
  *
  * Prereqs (run from repo root):
- *   mkdir -p .cache/cricsheet && cd .cache/cricsheet
- *   curl -LO https://cricsheet.org/downloads/t20s_male_json.zip
+ *   mkdir -p .cache/cricsheet/leagues && cd .cache/cricsheet
+ *   curl -LO https://cricsheet.org/downloads/t20s_male_json.zip && unzip -q t20s_male_json.zip -d t20s_male_json
  *   curl -LO https://cricsheet.org/register/names.csv
- *   unzip -q t20s_male_json.zip -d t20s_male_json
+ *   for c in ipl bbl psl cpl sat ilt bpl lpl mlc ntb ssm sma ctc npl; do
+ *     curl -Lo leagues/${c}.zip https://cricsheet.org/downloads/${c}_male_json.zip && unzip -q leagues/${c}.zip -d leagues/${c}
+ *   done
  * Then: npx tsx scripts/build-history.ts
  *
  * Cricsheet files are treated strictly as data.
@@ -17,15 +20,32 @@ import { SCORING_VERSION, scoreCricsheetMatch, type CricsheetMatch } from "../sr
 
 const ROOT = process.cwd();
 const CACHE = path.join(ROOT, ".cache", "cricsheet");
-const MATCH_DIR = path.join(CACHE, "t20s_male_json");
 const NAMES_CSV = path.join(CACHE, "names.csv");
-const OUT = path.join(ROOT, "data", "history", "t20i_male.json");
+const OUT = path.join(ROOT, "data", "history", "t20_male.json");
 
-const DATASET_URL = "https://cricsheet.org/downloads/t20s_male_json.zip";
+const DATASET_URL = "https://cricsheet.org/downloads/";
+/** Men's T20 competitions loaded (code -> Cricsheet dump dir). The Hundred and T10 are excluded: different formats. */
+const COMPETITIONS: { code: string; label: string; dir: string }[] = [
+  { code: "T20I", label: "T20 internationals", dir: "t20s_male_json" },
+  { code: "IPL", label: "Indian Premier League", dir: "leagues/ipl" },
+  { code: "BBL", label: "Big Bash League", dir: "leagues/bbl" },
+  { code: "PSL", label: "Pakistan Super League", dir: "leagues/psl" },
+  { code: "CPL", label: "Caribbean Premier League", dir: "leagues/cpl" },
+  { code: "SA20", label: "SA20", dir: "leagues/sat" },
+  { code: "ILT20", label: "International League T20", dir: "leagues/ilt" },
+  { code: "BPL", label: "Bangladesh Premier League", dir: "leagues/bpl" },
+  { code: "LPL", label: "Lanka Premier League", dir: "leagues/lpl" },
+  { code: "MLC", label: "Major League Cricket", dir: "leagues/mlc" },
+  { code: "Blast", label: "T20 Blast", dir: "leagues/ntb" },
+  { code: "Smash", label: "Super Smash", dir: "leagues/ssm" },
+  { code: "SMAT", label: "Syed Mushtaq Ali Trophy", dir: "leagues/sma" },
+  { code: "CSA T20", label: "CSA T20 Challenge", dir: "leagues/ctc" },
+  { code: "NPL", label: "Nepal Premier League", dir: "leagues/npl" },
+];
 const MIN_DATE = "2022-01-01";
 const MAX_RECS = 40;
 const MAX_ALT_NAMES = 5;
-const SIZE_LIMIT = 6 * 1024 * 1024;
+const SIZE_LIMIT = 20 * 1024 * 1024;
 const RECENT_CUTOFF = "2023-01-01";
 const FULL_MEMBERS = new Set([
   "India",
@@ -55,6 +75,7 @@ type Rec = [
   ballsBowled: number,
   runs: number,
   wickets: number,
+  comp: string,
 ];
 
 interface VenueOut {
@@ -82,7 +103,7 @@ interface PlayerOut {
 interface HistoryFile {
   meta: {
     source: "Cricsheet";
-    dataset: "t20s_male";
+    dataset: "t20_male";
     url: string;
     license: "ODC-BY 1.0";
     attribution: "Ball-by-ball data from Cricsheet (cricsheet.org), ODC-BY 1.0";
@@ -90,6 +111,7 @@ interface HistoryFile {
     firstDate: string;
     lastDate: string;
     matches: number;
+    competitions: Record<string, { label: string; matches: number; firstDate: string; lastDate: string }>;
     scoringVersion: string;
     notes: string[];
   };
@@ -153,13 +175,19 @@ function hasDeliveries(m: CricsheetMatch): boolean {
 }
 
 function main() {
-  if (!fs.existsSync(MATCH_DIR)) {
-    throw new Error(`Match dir not found: ${MATCH_DIR}`);
+  const seen = new Set<string>();
+  const files: { file: string; full: string; comp: string }[] = [];
+  for (const c of COMPETITIONS) {
+    const dir = path.join(CACHE, c.dir);
+    if (!fs.existsSync(dir)) throw new Error(`Match dir not found: ${dir}`);
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith(".json") || seen.has(f)) continue; // Cricsheet match ids are global: never count a match twice
+      seen.add(f);
+      files.push({ file: f, full: path.join(dir, f), comp: c.code });
+    }
   }
-  const files = fs
-    .readdirSync(MATCH_DIR)
-    .filter((f) => f.endsWith(".json"))
-    .sort((a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10) || a.localeCompare(b));
+  files.sort((a, b) => Number.parseInt(a.file, 10) - Number.parseInt(b.file, 10) || a.file.localeCompare(b.file));
+  const compStats = new Map<string, { matches: number; firstDate: string; lastDate: string }>();
 
   const venues = new Map<string, VenueAcc>();
   const players = new Map<string, PlayerAcc>();
@@ -172,10 +200,10 @@ function main() {
   let firstDate = "9999-12-31";
   let lastDate = "0000-01-01";
 
-  for (const file of files) {
+  for (const { file, full, comp } of files) {
     let m: CricsheetMatch;
     try {
-      m = JSON.parse(fs.readFileSync(path.join(MATCH_DIR, file), "utf8")) as CricsheetMatch;
+      m = JSON.parse(fs.readFileSync(full, "utf8")) as CricsheetMatch;
     } catch {
       console.warn(`skip unparsable ${file}`);
       continue;
@@ -197,6 +225,11 @@ function main() {
     included++;
     if (date < firstDate) firstDate = date;
     if (date > lastDate) lastDate = date;
+    const cs = compStats.get(comp) ?? { matches: 0, firstDate: date, lastDate: date };
+    cs.matches++;
+    if (date < cs.firstDate) cs.firstDate = date;
+    if (date > cs.lastDate) cs.lastDate = date;
+    compStats.set(comp, cs);
 
     const rawVenue = (info.venue ?? "Unknown").trim();
     const vKey = venueKeyOf(rawVenue);
@@ -284,6 +317,7 @@ function main() {
         p.ballsBowled,
         p.runs,
         p.wickets,
+        comp,
       ];
       let pa = players.get(id);
       if (!pa) {
@@ -356,14 +390,15 @@ function main() {
     "Super-over innings are excluded from points and venue stats.",
     "avgFirstInnings/avgSecondInnings exclude 'no result' matches; chaseWinPct uses matches with an outright winner (ties excluded).",
     "batIndex/bowlIndex = venue mean per player-appearance / global mean (bowlIndex only over appearances with ballsBowled > 0).",
-    `recs are most recent first, at most ${MAX_RECS} per player. Rec = [date, venueKey, team, opp, pts, batPts, bowlPts, fieldPts, ballsFaced, ballsBowled, runs, wickets].`,
+    `recs are most recent first, at most ${MAX_RECS} per player. Rec = [date, venueKey, team, opp, pts, batPts, bowlPts, fieldPts, ballsFaced, ballsBowled, runs, wickets, comp].`,
+    "One combined men's T20 dataset: T20 internationals plus franchise/domestic T20 leagues (comp code per record); all scored with the same Dream11 T20 approximation.",
     "altNames come from Cricsheet register names.csv and exclude the primary name.",
   ];
 
   const build = (playersOut: Record<string, PlayerOut>, extraNotes: string[]): HistoryFile => ({
     meta: {
       source: "Cricsheet",
-      dataset: "t20s_male",
+      dataset: "t20_male",
       url: DATASET_URL,
       license: "ODC-BY 1.0",
       attribution: "Ball-by-ball data from Cricsheet (cricsheet.org), ODC-BY 1.0",
@@ -371,6 +406,9 @@ function main() {
       firstDate,
       lastDate,
       matches: included,
+      competitions: Object.fromEntries(
+        COMPETITIONS.filter((c) => compStats.has(c.code)).map((c) => [c.code, { label: c.label, ...compStats.get(c.code)! }]),
+      ),
       scoringVersion: SCORING_VERSION,
       notes: [...notes, ...extraNotes],
     },

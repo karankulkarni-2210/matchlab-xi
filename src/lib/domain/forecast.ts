@@ -63,7 +63,15 @@ export interface HistoryRec {
   ballsBowled: number;
   runs: number;
   wickets: number;
+  /** Competition code (e.g. "T20I", "IPL"); absent in synthetic demo history. */
+  comp?: string;
 }
+
+/** " (IPL, T20I)": which competitions a set of records came from, for evidence notes. */
+const compList = (recs: HistoryRec[]) => {
+  const c = [...new Set(recs.map((r) => r.comp).filter(Boolean))];
+  return c.length ? ` (${c.join(", ")})` : "";
+};
 
 export interface PlayerHistory {
   id: string;
@@ -172,7 +180,7 @@ export function forecastPlayer(
       raw: formRaw === null ? null : round(formRaw, 1),
       n: nF,
       estimate: round(formEst, 2),
-      note: nF ? `Recency-weighted ${round(formRaw!, 1)} pts over last ${nF} T20I(s)` : "No recent T20I history; uses baseline",
+      note: nF ? `Recency-weighted ${round(formRaw!, 1)} pts over last ${nF} T20(s)${compList(last5)}` : "No recent T20 history; uses baseline",
     },
     opportunity: {
       raw: nB ? round(ratio, 2) : null,
@@ -189,14 +197,14 @@ export function forecastPlayer(
       note: !venue
         ? "Venue not in history; uses baseline"
         : nV
-          ? `${round(venueRaw!, 1)} pts avg in ${nV} T20I(s) at ${venue.name}`
-          : `No T20Is at ${venue.name}; venue scoring index applied (${venue.matches} matches)`,
+          ? `${round(venueRaw!, 1)} pts avg in ${nV} T20(s) at ${venue.name}`
+          : `No T20s at ${venue.name}; venue scoring index applied (${venue.matches} matches)`,
     },
     matchup: {
       raw: matchupRaw === null ? null : round(matchupRaw, 1),
       n: nM,
       estimate: round(matchupEst, 2),
-      note: nM ? `${round(matchupRaw!, 1)} pts avg in ${nM} T20I(s) vs ${opp}` : `No T20Is vs ${opp ?? "opponent"}; uses baseline`,
+      note: nM ? `${round(matchupRaw!, 1)} pts avg in ${nM} T20(s) vs ${opp}` : `No T20s vs ${opp ?? "opponent"}; uses baseline`,
     },
   };
 

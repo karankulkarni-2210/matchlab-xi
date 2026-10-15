@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { HistoryRec, PlayerHistory, VenueProfile } from "@/lib/domain/forecast";
 
-type Rec = [string, string, string, string, number, number, number, number, number, number, number, number];
+type Rec = [string, string, string, string, number, number, number, number, number, number, number, number, string];
 interface HistoryFile {
   meta: {
     source: string;
@@ -15,6 +15,7 @@ interface HistoryFile {
     firstDate: string;
     lastDate: string;
     matches: number;
+    competitions: Record<string, { label: string; matches: number; firstDate: string; lastDate: string }>;
     scoringVersion: string;
     notes: string[];
   };
@@ -40,7 +41,7 @@ export function venueKeyOf(venue: string): string {
 function load() {
   if (cache) return cache;
   const file = JSON.parse(
-    fs.readFileSync(path.join(process.cwd(), "data", "history", "t20i_male.json"), "utf8"),
+    fs.readFileSync(path.join(process.cwd(), "data", "history", "t20_male.json"), "utf8"),
   ) as HistoryFile;
   const byName = new Map<string, string[]>();
   let sum = 0;
@@ -79,9 +80,10 @@ const toRec = (r: Rec): HistoryRec => ({
   ballsBowled: r[9],
   runs: r[10],
   wickets: r[11],
+  comp: r[12],
 });
 
-export type MatchMethod = "exact" | "alias" | "initials" | "override" | "none" | "ambiguous";
+export type MatchMethod = "exact" | "alias" | "initials" | "name-only" | "override" | "none" | "ambiguous";
 
 export interface PlayerMatch {
   history: PlayerHistory | null;
@@ -91,9 +93,10 @@ export interface PlayerMatch {
 }
 
 /**
- * Matches a provider player name to a Cricsheet identity, restricted to players who have
- * represented `team`. Order: owner override → exact/alias name → surname + first initial.
- * Ambiguous heuristic matches are NOT used (evidence shown as missing instead).
+ * Matches a provider player name to a Cricsheet identity, preferring players who have represented
+ * `team`. Order: owner override → exact/alias name → surname + first initial → full name across all
+ * teams (league transfers; only when exactly one player has that full name). Ambiguous matches are
+ * NOT used (evidence shown as missing instead).
  */
 export function matchPlayer(name: string, team: string, override?: string | null): PlayerMatch {
   const { file, byName } = load();
@@ -122,11 +125,17 @@ export function matchPlayer(name: string, team: string, override?: string | null
       if (!p.teams.includes(team)) return false;
       const t = p.name.split(" ");
       const sur = normName(t[t.length - 1]);
-      const initials = t.slice(0, -1).join("");
-      return sur === surname && initials.length > 0 && initials[0].toLowerCase() === first;
+      const given = t.slice(0, -1);
+      const initials = given.join("");
+      // "M Prasidh Krishna" ~ "Prasidh Krishna": first initial OR a full given-name token must agree
+      return sur === surname && initials.length > 0 && (initials[0].toLowerCase() === first || given.some((g) => normName(g) === tokens[0]));
     });
     if (cands.length === 1) return pick(cands[0][0], "initials");
     if (cands.length > 1) return { history: null, method: "ambiguous", historyName: null, lastDate: null };
+    // Franchise squads change every season: a unique full-name match from another team is still the same person.
+    const anyTeam = byName.get(normName(name)) ?? [];
+    if (anyTeam.length === 1) return pick(anyTeam[0], "name-only");
+    if (anyTeam.length > 1) return { history: null, method: "ambiguous", historyName: null, lastDate: null };
   }
   return { history: null, method: "none", historyName: null, lastDate: null };
 }
